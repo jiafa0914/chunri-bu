@@ -1,0 +1,26 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><pre id="out">running...</pre>
+<script src="assets/js/vendor/cloudbase.full.js"></script>
+<script>
+(async function(){
+  var out = document.getElementById('out');
+  var log = [];
+  function add(s){ log.push(s); out.textContent = log.join('\n'); }
+  function fmt(e){ try{return JSON.stringify({code:e&&e.code,message:e&&e.message,name:e&&e.name,raw:String(e)});}catch(_){return String(e);} }
+  try {
+    add('1 init');
+    var app = cloudbase.init({ env: 'chunri-bu-d7gvy3e6naad3ba52', region: 'ap-shanghai' });
+    add('2 anon');
+    try { await app.auth().signInAnonymously(); add('2 ok'); } catch(e){ add('2 FAIL: ' + fmt(e)); }
+    add('3 read profile');
+    var db = app.database();
+    var ps = await db.collection('profiles').limit(1).get();
+    var fid = (ps.data && ps.data[0] && ps.data[0].photo) || '';
+    add('fid=' + fid.substring(0,60));
+    add('4 createSignedUrls');
+    try { var r = await app.storage().from().createSignedUrls([fid], 3600); add('4 result: ' + JSON.stringify(r)); } catch(e){ add('4 FAIL: ' + fmt(e)); }
+    add('5 getPublicUrl');
+    try { var p = app.storage().from().getPublicUrl(fid); add('5 result: ' + JSON.stringify(p)); } catch(e){ add('5 FAIL: ' + fmt(e)); }
+    add('DONE');
+  } catch(e){ add('FATAL: ' + fmt(e)); }
+})();
+</script></body></html>
