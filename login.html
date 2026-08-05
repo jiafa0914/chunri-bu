@@ -44,7 +44,7 @@
         </div>
       </div>
       <div class="grid grid-2">
-        <div class="field"><label>游戏昵称</label><input id="rg-name" placeholder="江湖名号"></div>
+        <div class="field"><label>确认密码</label><input id="rg-pwd2" type="password" placeholder="再输一次"></div>
         <div class="field"><label>设置密码</label><input id="rg-pwd" type="password" placeholder="至少 6 位"></div>
       </div>
       <div class="form-actions">
@@ -112,10 +112,9 @@
   $('rg-submit').addEventListener('click', async function(){
     var email = $('rg-email').value.trim();
     var code = $('rg-code').value.trim();
-    var name = $('rg-name').value.trim();
     var pwd = $('rg-pwd').value;
-    if(!email || !code || !name || !pwd){ C.toast('请填写完整信息', 'err'); return; }
-    if(pwd.length < 6){ C.toast('密码至少 6 位', 'err'); return; }
+    if(!email || !code || !pwd){ C.toast('请填写完整信息', 'err'); return; }
+    if(pwd.length < 6){ C.toast('密码至少 6 位', 'err'); return; } if(pwd !== $('rg-pwd2').value){ C.toast('两次密码不一致', 'err'); return; }
     C.toast('注册中…');
     try {
       if(!verificationId) throw new Error('请先获取验证码');
@@ -126,8 +125,7 @@
         email: email,
         password: pwd,
         verification_code: code,
-        verification_token: token,
-        name: name
+        verification_token: token
       });
       C.toast('注册成功，已自动登录', 'ok');
       showDone();
