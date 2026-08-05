@@ -24,7 +24,7 @@
     var t = GH.token();
     if(t) headers['Authorization'] = 'Bearer ' + t;
     var apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? location.protocol + '//' + location.host + '/ghapi/' : 'https://api.github.com/';
-    var res = await fetch(apiBase + 'repos/' + encodeURIComponent(r.owner) + '/' + encodeURIComponent(r.name) + '/' + path, Object.assign({}, opts, {headers: headers}));
+    var res = await fetch(apiBase + 'repos/' + encodeURIComponent(r.owner) + '/' + encodeURIComponent(r.name) + (path ? '/' + path : ''), Object.assign({}, opts, {headers: headers}));
     if(!res.ok){
       var msg = 'GitHub API ' + res.status;
       try { var j = await res.json(); if(j && j.message) msg = j.message; } catch(e){}
