@@ -27,6 +27,8 @@
 </section>
 
 <div id="site-footer-placeholder"></div>
+<script src="assets/js/vendor/cloudbase.full.js"></script>
+<script src="assets/js/cloudbase.js"></script>
 <script src="assets/js/github.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
@@ -39,19 +41,32 @@
       '<div class="field"><label>你的游戏昵称</label><input id="sg-name" placeholder="如：东风不识路"></div>' +
       '<div class="field"><label>游戏内 ID（选填）</label><input id="sg-id"></div>' +
       '<div class="field"><label>备注（选填）</label><textarea id="sg-note" style="min-height:60px"></textarea></div>' +
-      '<div class="form-actions"><button class="btn btn-cinnabar" onclick="C._sgSend()">生成报名信息</button>' +
+      '<div class="form-actions"><button class="btn btn-cinnabar" id="sg-btn" onclick="C._sgSend()">确认报名</button>' +
       '<button class="btn btn-paper" onclick="C.modal.close()">取消</button></div>'
     );
   }
-  C._sgSend = function(){
+  C._sgSend = async function(){
     var name = document.getElementById('sg-name').value.trim();
     if(!name){ C.toast('请填写游戏昵称', 'err'); return; }
     var id = document.getElementById('sg-id').value.trim();
     var note = document.getElementById('sg-note').value.trim();
-    var text = '【椿日部·活动报名】' + current.title + '\n日期：' + current.date + (current.time ? ' ' + current.time : '') + '\n游戏昵称：' + name + (id ? '\n游戏ID：' + id : '') + (note ? '\n备注：' + note : '');
-    if(navigator.clipboard){ navigator.clipboard.writeText(text).then(function(){ C.toast('报名信息已复制，发给社主即可', 'ok'); }); }
-    else C.toast('请截图本页信息发给社主');
-    C.modal.close();
+    var btn = document.getElementById('sg-btn');
+    if(btn) btn.disabled = true;
+    try {
+      await CB.ensureAnon();
+      await CB.coll('signups').add({
+        activityId: current.id || '',
+        activityTitle: current.title || '',
+        date: current.date || '',
+        name: name,
+        gameId: id,
+        note: note,
+        createdAt: new Date().toISOString()
+      });
+      C.toast('报名成功！社主能在后台看到你的报名', 'ok');
+      C.modal.close();
+    } catch(e){ C.toast('报名失败：' + (e.message || e), 'err'); }
+    if(btn) btn.disabled = false;
   };
   (async function(){
     var data = await C.fetchJSON('activities.json');
