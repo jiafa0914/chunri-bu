@@ -204,45 +204,63 @@
   }
   function delAbout(i){ cfg.about.splice(i,1); saveConfigFile('删除关于内容').then(renderAbout); }
 
-  /* ================= 成员 ================= */
+  /* ================= 成员（云数据库） ================= */
+  var profiles = [];
   function memberCardHtml(m, idx){
-    var photo = m.photo ? '<img src="' + C.esc(m.photo) + '" alt="">' : '<div class="ph-placeholder">' + C.esc((m.name||'?').slice(0,1)) + '</div>';
+    var photo = m._photoUrl ? '<img src="' + C.esc(m._photoUrl) + '" alt="">' : '<div class="ph-placeholder">' + C.esc((m.name||'?').slice(0,1)) + '</div>';
     return '<div class="item-row"><div class="row-top">' +
       '<div style="display:flex;align-items:center;gap:12px">' +
       '<span style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:1px solid var(--line);display:inline-block;background:var(--paper-2)">' + photo + '</span>' +
       '<div><b>' + C.esc(m.name) + '</b> <span class="badge" style="margin-left:6px">' + C.esc(m.role||'') + '</span>' +
       (m.active === false ? ' <span class="badge badge-dai">暂离</span>' : '') + '</div></div>' +
       '<div class="row-actions">' +
-      '<button class="btn btn-paper btn-sm" data-link="' + idx + '">编辑链接</button>' +
       '<button class="btn btn-paper btn-sm" data-e="' + idx + '">编辑</button>' +
       '<button class="btn btn-danger btn-sm" data-d="' + idx + '">删除</button></div></div>' +
-      '<p class="hint" style="margin-top:6px">签名：' + C.esc(m.signature||'—') + '</p></div>';
+      '<p class="hint" style="margin-top:6px">' + (m.email ? C.esc(m.email) + ' · ' : '') + '签名：' + C.esc(m.signature||'—') + '</p></div>';
   }
-  function renderMembers(){
+  async function loadProfiles(){
+    profiles = [];
+    try {
+      var docs = await CB.listProfiles();
+      profiles = docs || [];
+      var need = [];
+      profiles.forEach(function(p){ if(p.photo) need.push(p.photo); });
+      var urls = {};
+      try { urls = await CB.fileUrls(need); } catch(e){}
+      profiles.forEach(function(p){ p._photoUrl = p.photo ? (urls[p.photo] || '') : ''; });
+    } catch(e){ profiles = []; }
+  }
+  async function renderMembers(){
     var box = $('member-list');
-    if(!members.members.length){ box.innerHTML = '<p class="hint">暂无成员</p>'; return; }
-    box.innerHTML = members.members.map(memberCardHtml).join('');
+    var hint = $('mem-cloud-hint');
+    if(!CB.isLoggedIn()){
+      box.innerHTML = '<p class="hint">请先在「① 云账号」标签登录，才能管理成员。</p>';
+      if(hint) hint.textContent = '';
+      return;
+    }
+    await loadProfiles();
+    if(!profiles.length){ box.innerHTML = '<p class="hint">暂无成员。可点「从旧数据导入」把旧成员迁过来，或「＋ 新增成员」。</p>'; return; }
+    box.innerHTML = profiles.map(memberCardHtml).join('');
     box.querySelectorAll('[data-e]').forEach(function(b){ b.addEventListener('click', function(){ editMember(+b.dataset.e); }); });
     box.querySelectorAll('[data-d]').forEach(function(b){ b.addEventListener('click', function(){ delMember(+b.dataset.d); }); });
-    box.querySelectorAll('[data-link]').forEach(function(b){ b.addEventListener('click', function(){ copyMemberLink(+b.dataset.link); }); });
   }
-  function newMember(){ memEdit = -1; $('mem-name').value=''; $('mem-role').value=''; $('mem-title').value=''; $('mem-photo-url').value=''; $('mem-signature').value=''; $('mem-bgm-url').value=''; $('mem-bio').value=''; $('mem-joindate').value=''; $('mem-active').checked=true; $('mem-editkey').value=''; $('mem-photo-preview').src='assets/svg/plum.svg'; $('mem-cancel').classList.add('hidden'); $('mem-form-title').textContent='新增成员'; }
+  function newMember(){ memEdit = -1; $('mem-name').value=''; $('mem-role').value=''; $('mem-title').value=''; $('mem-photo-url').value=''; $('mem-signature').value=''; $('mem-bgm-url').value=''; $('mem-bio').value=''; $('mem-joindate').value=''; $('mem-active').checked=true; $('mem-photo-preview').src='assets/svg/plum.svg'; $('mem-cancel').classList.add('hidden'); $('mem-form-title').textContent='新增成员'; }
   function editMember(i){
-    memEdit = i; var m = members.members[i];
-    $('mem-form-title').textContent = '编辑成员 · ' + m.name;
+    memEdit = i; var m = profiles[i];
+    $('mem-form-title').textContent = '编辑成员 · ' + (m.name || '');
     $('mem-name').value = m.name||''; $('mem-role').value = m.role||''; $('mem-title').value = m.title||'';
     $('mem-photo-url').value = m.photo||''; $('mem-signature').value = m.signature||''; $('mem-bgm-url').value = m.bgm||'';
-    $('mem-bio').value = m.bio||''; $('mem-joindate').value = m.joinDate||''; $('mem-active').checked = m.active !== false;
-    $('mem-editkey').value = m.editKey||'';
-    $('mem-photo-preview').src = m.photo || 'assets/svg/plum.svg';
+    $('mem-bio').value = m.bio||''; $('mem-joindate').value = m.joinDate||'';
+    $('mem-active').checked = m.active !== false;
+    $('mem-photo-preview').src = m._photoUrl || 'assets/svg/plum.svg';
     $('mem-cancel').classList.remove('hidden');
   }
   async function saveMember(){
+    if(!CB.isLoggedIn()){ C.toast('请先在云账号登录', 'err'); return; }
     if(!$('mem-name').value.trim()){ C.toast('请填写成员名字', 'err'); return; }
     var m = {
-      id: (memEdit >= 0) ? members.members[memEdit].id : ('m' + Date.now().toString(36)),
       name: $('mem-name').value.trim(),
-      role: $('mem-role').value.trim(),
+      role: $('mem-role').value.trim() || '成员',
       title: $('mem-title').value.trim(),
       photo: $('mem-photo-url').value.trim(),
       signature: $('mem-signature').value.trim(),
@@ -250,46 +268,76 @@
       bio: $('mem-bio').value.trim(),
       joinDate: $('mem-joindate').value.trim(),
       active: $('mem-active').checked,
-      editKey: $('mem-editkey').value.trim()
+      updatedAt: new Date().toISOString()
     };
-    if(memEdit >= 0) members.members[memEdit] = m; else members.members.push(m);
     try {
-      await GH.writeFile('members.json', JSON.stringify(members, null, 2), '更新成员资料');
-      renderMembers(); newMember(); C.toast('成员已保存', 'ok');
-    } catch(e){ C.toast('保存失败：' + e.message, 'err'); }
+      if(memEdit >= 0){
+        var id = profiles[memEdit]._id || profiles[memEdit].id;
+        await CB.coll('profiles').doc(id).update(m);
+      } else {
+        m.createdAt = new Date().toISOString();
+        await CB.coll('profiles').add(m);
+      }
+      newMember(); await renderMembers(); C.toast('成员已保存', 'ok');
+    } catch(e){ C.toast('保存失败：' + (e.message || e), 'err'); }
   }
-  function delMember(i){
-    if(!confirm('确定删除成员 ' + members.members[i].name + ' 吗？')) return;
-    members.members.splice(i,1);
-    GH.writeFile('members.json', JSON.stringify(members, null, 2), '删除成员').then(function(){ renderMembers(); C.toast('已删除', 'ok'); }).catch(function(e){ C.toast(e.message,'err'); });
+  async function delMember(i){
+    var m = profiles[i];
+    if(!confirm('确定删除成员 ' + (m.name||'') + ' 吗？')) return;
+    try {
+      await CB.coll('profiles').doc(m._id || m.id).remove();
+      await renderMembers(); C.toast('已删除', 'ok');
+    } catch(e){ C.toast('删除失败：' + (e.message || e), 'err'); }
   }
-  function genEditKey(){
-    var k = '';
-    var chars = 'abcdefghjkmnpqrstuvwxyz23456789';
-    for(var i=0;i<10;i++) k += chars[Math.floor(Math.random()*chars.length)];
-    $('mem-editkey').value = k;
-  }
-  function copyMemberLink(i){
-    var m = members.members[i];
-    if(!m.editKey){ C.toast('该成员还没有编辑密钥，请先生成', 'err'); return; }
-    var url = location.origin + location.pathname.replace(/[^/]*$/, '') + 'member-edit.html?id=' + encodeURIComponent(m.id) + '&key=' + encodeURIComponent(m.editKey);
-    if(navigator.clipboard){ navigator.clipboard.writeText(url).then(function(){ C.toast('编辑链接已复制', 'ok'); }); }
-    else C.modal.open('<div class="modal-title">成员编辑链接</div><p style="word-break:break-all;font-size:13.5px">' + C.esc(url) + '</p><p class="hint">把链接发给该成员，他/她就能自己设置照片、签名和背景音乐。</p>');
-  }
+  function genEditKey(){ C.toast('已升级为账号机制：成员登录后自己改档案', 'ok'); }
   async function uploadMemberPhoto(){
     var f = $('mem-photo-file').files[0]; if(!f) return;
     C.toast('正在上传照片…');
-    try { var blob = await C.compressImage(f, 800, 0.85); var p = await GH.uploadAsset(blob, 'assets/img/members', GH.fileName('member') + '.jpg'); $('mem-photo-url').value = p; $('mem-photo-preview').src = p; C.toast('照片已上传', 'ok'); }
-    catch(e){ C.toast('上传失败：' + e.message, 'err'); }
+    try {
+      var blob = await C.compressImage(f, 800, 0.85);
+      var r = await CB.upload('members/' + Date.now().toString(36) + '.jpg', blob);
+      var fid = r.id || r.path || '';
+      $('mem-photo-url').value = fid;
+      var u = await CB.fileUrl(fid);
+      $('mem-photo-preview').src = u || 'assets/svg/plum.svg';
+      C.toast('照片已上传', 'ok');
+    } catch(e){ C.toast('上传失败：' + (e.message || e), 'err'); }
   }
   async function uploadMemberBgm(){
     var f = $('mem-bgm-file').files[0]; if(!f) return;
     if(f.size > 8*1024*1024){ C.toast('音频请控制在 8MB 以内', 'err'); return; }
     C.toast('正在上传音乐…');
-    try { var p = await GH.uploadAsset(f, 'assets/music', GH.fileName('bgm') + '.mp3'); $('mem-bgm-url').value = p; C.toast('音乐已上传', 'ok'); }
-    catch(e){ C.toast('上传失败：' + e.message, 'err'); }
+    try {
+      var r = await CB.upload('members/' + Date.now().toString(36) + '.mp3', f);
+      $('mem-bgm-url').value = r.id || r.path || '';
+      C.toast('音乐已上传', 'ok');
+    } catch(e){ C.toast('上传失败：' + (e.message || e), 'err'); }
   }
-
+  async function importOldMembers(){
+    if(!CB.isLoggedIn()){ C.toast('请先在云账号登录', 'err'); return; }
+    C.toast('正在导入旧成员…');
+    try {
+      var data = await C.fetchJSON('members.json');
+      var oldList = (data.members || []);
+      await loadProfiles();
+      var names = {};
+      profiles.forEach(function(p){ names[p.name] = 1; });
+      var added = 0;
+      for(var k = 0; k < oldList.length; k++){
+        var o = oldList[k];
+        if(names[o.name]) continue;
+        await CB.coll('profiles').add({
+          name: o.name || '未命名', role: o.role || '成员', title: o.title || '',
+          photo: /^https?:/.test(o.photo||'') ? (o.photo||'') : '', signature: o.signature||'',
+          bgm: /^https?:/.test(o.bgm||'') ? (o.bgm||'') : '', bio: o.bio||'',
+          joinDate: o.joinDate || '', active: o.active !== false,
+          createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+        });
+        names[o.name] = 1; added++;
+      }
+      await renderMembers(); C.toast('导入完成，新增 ' + added + ' 位', 'ok');
+    } catch(e){ C.toast('导入失败：' + (e.message || e), 'err'); }
+  }
   /* ================= 活动 ================= */
   function renderAct(){
     var box = $('act-list');
@@ -368,16 +416,79 @@
       .catch(function(e){ C.toast('保存失败：' + e.message, 'err'); });
   }
 
-  /* ================= 相册 ================= */
-  function saveAlbumsFile(msg){
-    return GH.writeFile('albums.json', JSON.stringify(albums, null, 2), msg || '更新相册')
-      .then(function(){ C.toast('相册已保存', 'ok'); renderAlbums(); })
-      .catch(function(e){ C.toast('保存失败：' + e.message, 'err'); });
+  /* ================= 云账号（CloudBase） ================= */
+  async function renderAccount(){
+    try {
+      var ls = await CB.getLoginState();
+      var status = $('acc-status');
+      if(ls && ls.user){
+        $('acc-login-form').style.display = 'none';
+        $('acc-logged').style.display = '';
+        $('acc-email-show').textContent = CB.getEmail() || CB.getUid() || '已登录';
+        var role = '成员';
+        try {
+          var docs = await CB.listProfiles();
+          var mine = (docs || []).filter(function(p){ return p.uid === CB.getUid(); })[0];
+          if(mine && mine.role) role = mine.role;
+        } catch(e){}
+        $('acc-role-show').textContent = role;
+        if(status) status.textContent = role === '社主' ? '已登录，身份：社主（可管理成员和相册）' : '已登录，身份：' + role;
+      } else {
+        $('acc-login-form').style.display = '';
+        $('acc-logged').style.display = 'none';
+        if(status) status.textContent = '未登录。用注册邮箱登录；第一个注册的成员自动成为「社主」。';
+      }
+    } catch(e){ console.warn(e); }
   }
-  function renderAlbums(){
+  async function accLogin(){
+    var email = $('acc-email').value.trim(), pwd = $('acc-pwd').value;
+    if(!email || !pwd){ C.toast('请填写邮箱和密码', 'err'); return; }
+    C.toast('登录中…');
+    try {
+      await CB.signIn(email, pwd);
+      C.toast('登录成功', 'ok');
+      await renderAccount();
+      renderMembers(); renderAlbums();
+    } catch(e){ C.toast('登录失败：' + (e.message || e), 'err'); }
+  }
+  async function accLogout(){
+    await CB.signOut();
+    await renderAccount();
+    renderMembers(); renderAlbums();
+    C.toast('已退出', 'ok');
+  }
+  async function setShepherd(){
+    if(!CB.isLoggedIn()){ C.toast('请先登录', 'err'); return; }
+    try {
+      var uid = CB.getUid();
+      var docs = await CB.listProfiles();
+      var mine = (docs || []).filter(function(p){ return p.uid === uid; })[0];
+      if(mine){
+        await CB.coll('profiles').doc(mine._id || mine.id).update({ role: '社主' });
+      } else {
+        await CB.coll('profiles').add({ uid: uid, email: CB.getEmail() || '', name: '社主', role: '社主', active: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+      }
+      await renderAccount(); C.toast('已设为社主', 'ok');
+    } catch(e){ C.toast('操作失败：' + (e.message || e), 'err'); }
+  }
+  /* ================= 相册（云存储 + 云数据库） ================= */
+  var albums = [];
+  async function renderAlbums(){
     var box = $('album-list');
-    if(!albums || !albums.albums || !albums.albums.length){ box.innerHTML = '<p class="hint">还没有相册。先点上方「＋ 新增相册」创建，保存后会自动进入「上传照片」界面。</p>'; return; }
-    box.innerHTML = albums.albums.map(function(a, i){
+    if(!CB.isLoggedIn()){
+      box.innerHTML = '<p class="hint">请先在「① 云账号」标签登录，才能管理相册。</p>';
+      return;
+    }
+    try {
+      var docs = await CB.listAlbums();
+      albums = docs || [];
+    } catch(e){
+      albums = [];
+      box.innerHTML = '<p class="hint">读取相册失败：' + C.esc(e.message || e) + '</p>';
+      return;
+    }
+    if(!albums.length){ box.innerHTML = '<p class="hint">还没有相册。先点上方「＋ 新增相册」创建，保存后会自动进入「上传照片」界面。</p>'; return; }
+    box.innerHTML = albums.map(function(a, i){
       var cnt = (a.images || []).length;
       return '<div class="item-row"><div class="row-top">' +
         '<div><b>' + C.esc(a.title || '未命名') + '</b> <span class="hint">' + cnt + ' 张</span></div>' +
@@ -396,47 +507,63 @@
     $('album-edit-area').innerHTML = '';
   }
   function newAlbum(){ resetAlbumForm(); }
-  function editAlbum(i){
+  async function editAlbum(i){
     albumEdit = i;
-    var a = albums.albums[i];
+    var a = albums[i];
     $('album-title').value = a.title || ''; $('album-desc').value = a.desc || '';
     $('album-form-title').textContent = '编辑相册 · ' + (a.title || '');
     $('album-cancel').classList.remove('hidden');
-    renderAlbumEdit(i);
+    await renderAlbumEdit(i);
   }
-  function saveAlbumInfo(){
+  async function saveAlbumInfo(){
+    if(!CB.isLoggedIn()){ C.toast('请先在云账号登录', 'err'); return; }
     var title = $('album-title').value.trim();
     if(!title){ C.toast('请填写相册标题', 'err'); return; }
-    albums.albums = albums.albums || [];
-    if(albumEdit >= 0){
-      albums.albums[albumEdit].title = title;
-      albums.albums[albumEdit].desc = $('album-desc').value.trim();
-    } else {
-      albums.albums.unshift({ id: 'al' + Date.now().toString(36), title: title, desc: $('album-desc').value.trim(), cover: '', images: [] });
-      albumEdit = 0;
-    }
-    saveAlbumsFile('更新相册信息').then(function(){ if(albumEdit >= 0) renderAlbumEdit(albumEdit); });
+    try {
+      if(albumEdit >= 0){
+        var doc = albums[albumEdit];
+        await CB.coll('albums').doc(doc._id || doc.id).update({ title: title, desc: $('album-desc').value.trim(), updatedAt: new Date().toISOString() });
+        doc.title = title; doc.desc = $('album-desc').value.trim();
+      } else {
+        var r = await CB.coll('albums').add({ id: 'al' + Date.now().toString(36), title: title, desc: $('album-desc').value.trim(), cover: '', images: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+        albums.unshift({ _id: (r && r.id) || '', id: 'al' + Date.now().toString(36), title: title, desc: $('album-desc').value.trim(), cover: '', images: [] });
+        albumEdit = 0;
+      }
+      await renderAlbums();
+      C.toast('相册信息已保存', 'ok');
+      if(albumEdit >= 0) renderAlbumEdit(albumEdit);
+    } catch(e){ C.toast('保存失败：' + (e.message || e), 'err'); }
   }
-  function delAlbum(i){
-    if(!confirm('删除相册「' + (albums.albums[i].title || '') + '」？')) return;
-    albums.albums.splice(i, 1);
-    if(albumEdit === i) resetAlbumForm();
-    saveAlbumsFile('删除相册');
+  async function delAlbum(i){
+    var a = albums[i];
+    if(!confirm('删除相册「' + (a.title || '') + '」？')) return;
+    try {
+      await CB.coll('albums').doc(a._id || a.id).remove();
+      albums.splice(i, 1);
+      if(albumEdit === i) resetAlbumForm();
+      await renderAlbums(); C.toast('已删除', 'ok');
+    } catch(e){ C.toast('删除失败：' + (e.message || e), 'err'); }
   }
-  function renderAlbumEdit(i){
-    var a = albums.albums[i];
+  async function renderAlbumEdit(i){
+    var a = albums[i];
     var box = $('album-edit-area');
     if(!a){ box.innerHTML = ''; return; }
     var imgs = a.images || [];
+    var need = [];
+    imgs.forEach(function(im){ if(im && im.src) need.push(im.src); });
+    if(a.cover) need.push(a.cover);
+    var urls = {};
+    try { urls = await CB.fileUrls(need); } catch(e){}
     box.innerHTML =
       '<h3>管理图片（' + imgs.length + ' 张）</h3>' +
-      '<div class="field"><label>上传图片（可多选，自动压缩）</label><input id="album-img-file" type="file" accept="image/*" multiple></div>' +
+      '<div class="field"><label>上传图片（可多选，自动压缩，直接进云存储）</label><input id="album-img-file" type="file" accept="image/*" multiple></div>' +
       '<div id="album-thumbs">' + imgs.map(function(img, j){
+        var u = img && img.src ? (urls[img.src] || '') : '';
         return '<span class="album-img-thumb">' +
           (img.src === a.cover ? '<span class="cover-tag">封面</span>' : '') +
-          '<img src="' + C.esc(img.src) + '" alt="">' +
+          (u ? '<img src="' + C.esc(u) + '" alt="">' : '<span style="display:block;width:100%;height:80px;background:var(--paper-2)"></span>') +
           '<span class="thumb-bar">' +
-            '<input data-cap="' + j + '" value="' + C.esc(img.caption || '') + '" placeholder="图片说明">' +
+            '<input data-cap="' + j + '" value="' + C.esc((img && img.caption) || '') + '" placeholder="图片说明">' +
             '<span class="thumb-actions">' +
               '<button class="btn btn-paper btn-sm" data-act="cover" data-idx="' + j + '">设封面</button>' +
               '<button class="btn btn-paper btn-sm" data-act="rot" data-idx="' + j + '">旋转90°</button>' +
@@ -449,47 +576,71 @@
       '<div class="form-actions"><button class="btn btn-cinnabar btn-sm" id="album-imgs-save">保存图片修改</button></div>';
     $('album-img-file').addEventListener('change', function(){ uploadAlbumImages(i, this.files); });
     box.querySelectorAll('[data-cap]').forEach(function(inp){
-      inp.addEventListener('change', function(){ a.images[+inp.dataset.cap].caption = inp.value; });
+      inp.addEventListener('change', function(){ albums[i].images[+inp.dataset.cap].caption = inp.value; });
     });
     box.querySelectorAll('[data-act]').forEach(function(btn){
       btn.addEventListener('click', function(){
         var act = btn.dataset.act, idx = +btn.dataset.idx;
-        if(act === 'cover'){ a.cover = a.images[idx].src; renderAlbumEdit(i); C.toast('已设为封面，记得点「保存图片修改」'); }
-        else if(act === 'up'){ if(idx > 0){ var t = a.images[idx]; a.images[idx] = a.images[idx-1]; a.images[idx-1] = t; renderAlbumEdit(i); } }
-        else if(act === 'down'){ if(idx < a.images.length-1){ var t2 = a.images[idx]; a.images[idx] = a.images[idx+1]; a.images[idx+1] = t2; renderAlbumEdit(i); } }
+        var a2 = albums[i];
+        if(act === 'cover'){ a2.cover = a2.images[idx].src; renderAlbumEdit(i); C.toast('已设为封面，记得点「保存图片修改」'); }
+        else if(act === 'up'){ if(idx > 0){ var t = a2.images[idx]; a2.images[idx] = a2.images[idx-1]; a2.images[idx-1] = t; renderAlbumEdit(i); } }
+        else if(act === 'down'){ if(idx < a2.images.length-1){ var t2 = a2.images[idx]; a2.images[idx] = a2.images[idx+1]; a2.images[idx+1] = t2; renderAlbumEdit(i); } }
         else if(act === 'rot'){ rotateAlbumImage(i, idx); }
-        else if(act === 'del'){ if(confirm('删除这张图片？')){ a.images.splice(idx, 1); if(a.cover && !a.images.some(function(x){ return x.src === a.cover; })) a.cover = ''; renderAlbumEdit(i); C.toast('已删除，记得点保存'); } }
+        else if(act === 'del'){ if(confirm('删除这张图片？')){ a2.images.splice(idx, 1); if(a2.cover && !a2.images.some(function(x){ return x.src === a2.cover; })) a2.cover = ''; renderAlbumEdit(i); C.toast('已删除，记得点保存'); } }
       });
     });
-    $('album-imgs-save').addEventListener('click', function(){ saveAlbumsFile('更新相册图片'); });
+    $('album-imgs-save').addEventListener('click', async function(){ await saveAlbumImages(i); });
+  }
+  async function saveAlbumImages(i){
+    var a = albums[i];
+    try {
+      await CB.coll('albums').doc(a._id || a.id).update({ cover: a.cover || '', images: a.images || [], updatedAt: new Date().toISOString() });
+      C.toast('图片修改已保存', 'ok');
+    } catch(e){ C.toast('保存失败：' + (e.message || e), 'err'); }
   }
   async function uploadAlbumImages(i, files){
-    var a = albums.albums[i];
+    var a = albums[i];
     a.images = a.images || [];
     C.toast('正在上传 ' + files.length + ' 张…');
     try {
       for(var k = 0; k < files.length; k++){
         var blob = await C.compressImage(files[k], 1600, 0.85);
-        var p = await GH.uploadAsset(blob, 'assets/img/albums/' + a.id, GH.fileName('img') + '.jpg');
-        a.images.push({ src: p, caption: '' });
+        var r = await CB.upload('albums/' + (a.id || i) + '/' + Date.now().toString(36) + '.jpg', blob);
+        a.images.push({ src: r.id || r.path || '', caption: '' });
       }
-      await saveAlbumsFile('相册新增 ' + files.length + ' 张图片');
-      renderAlbumEdit(i);
+      await saveAlbumImages(i);
+      await renderAlbumEdit(i);
       C.toast('上传完成', 'ok');
-    } catch(e){ C.toast('上传失败：' + e.message, 'err'); }
+    } catch(e){ C.toast('上传失败：' + (e.message || e), 'err'); }
   }
   async function rotateAlbumImage(i, idx){
-    var a = albums.albums[i];
+    var a = albums[i];
     var img = a.images[idx];
     C.toast('正在旋转…');
     try {
-      var newPath = await C.rotateUpload(img.src, 'assets/img/albums/' + a.id);
-      a.images[idx].src = newPath;
-      if(a.cover === img.src) a.cover = newPath;
-      await saveAlbumsFile('旋转图片');
-      renderAlbumEdit(i);
+      var newFid = await rotateCloudImage(img.src, a.id || i);
+      a.images[idx].src = newFid;
+      if(a.cover === img.src) a.cover = newFid;
+      await saveAlbumImages(i);
+      await renderAlbumEdit(i);
       C.toast('旋转完成', 'ok');
-    } catch(e){ C.toast('旋转失败：' + e.message, 'err'); }
+    } catch(e){ C.toast('旋转失败：' + (e.message || e), 'err'); }
+  }
+  async function rotateCloudImage(fileId, folder){
+    var url = await CB.fileUrl(fileId);
+    if(!url) throw new Error('无法读取图片');
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    await new Promise(function(res, rej){ img.onload = res; img.onerror = function(){ rej(new Error('图片加载失败')); }; img.src = url; });
+    var canvas = document.createElement('canvas');
+    canvas.width = img.naturalHeight; canvas.height = img.naturalWidth;
+    var ctx = canvas.getContext('2d');
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(Math.PI / 2);
+    ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+    var blob = await new Promise(function(res){ canvas.toBlob(res, 'image/jpeg', 0.85); });
+    var r = await CB.upload('albums/' + folder + '/' + Date.now().toString(36) + '.jpg', blob);
+    return r.id || r.path || '';
   }
   async function uploadSiteBgm(){
     var f = $('set-bgm-file').files[0]; if(!f) return;
@@ -501,9 +652,7 @@
       C.toast('音乐已上传，点「保存站点设置」生效', 'ok');
     } catch(e){ C.toast('上传失败：' + e.message, 'err'); }
   }
-  function renderAll(){
-    renderBg(); renderSettings(); renderAnn(); renderAbout(); renderMembers(); renderAct(); renderGuides(); renderDaily(); renderAlbums();
-  }
+  function renderAll(){ renderBg(); renderSettings(); renderAnn(); renderAbout(); renderAct(); renderGuides(); renderDaily(); renderAccount(); renderMembers(); renderAlbums(); }
 
   /* ================= 初始化 ================= */
   document.addEventListener('DOMContentLoaded', async function(){
@@ -539,6 +688,10 @@
     $('album-add').addEventListener('click', newAlbum);
     $('album-save').addEventListener('click', saveAlbumInfo);
     $('album-cancel').addEventListener('click', resetAlbumForm);
+    $('acc-login').addEventListener('click', accLogin);
+    $('acc-logout').addEventListener('click', accLogout);
+    $('acc-set-shepherd').addEventListener('click', setShepherd);
+    $('mem-import').addEventListener('click', importOldMembers);
 
     try { await loadAll(); renderAll(); } catch(e){ console.warn(e); }
     if(GH.ready()){
