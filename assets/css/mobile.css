@@ -32,18 +32,16 @@
   .auth-chip a{font-size:12px;padding:4px 8px}
 }
 
-/* 成员滑动浏览（手机：左右滑动切换成员） */
+
+/* 成员矩阵模式（小卡片，一屏看多人，点开看完整详情） */
+.member-card{padding:12px}
+.member-card .member-photo{margin-bottom:10px;border-radius:10px}
+.member-card .member-name{font-size:16px;letter-spacing:2px}
+.member-card .member-signature{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 @media (max-width:768px){
-  #member-list.grid-4{display:block}
-  .member-swiper{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:14px;padding:4px 6px 16px;margin:0 -6px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .member-swiper::-webkit-scrollbar{display:none}
-  .member-swiper .member-card{flex:0 0 82%;scroll-snap-align:center;scroll-snap-stop:always;padding:18px 16px;text-align:center;cursor:pointer}
-  .member-swiper .member-photo{width:100%;aspect-ratio:1/1;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--paper-2);margin-bottom:14px}
-  .member-swiper .member-photo img{width:100%;height:100%;object-fit:cover}
-  .member-swiper .member-name{font-size:22px;letter-spacing:4px;font-family:var(--font-title)}
-  .member-swiper .member-role{margin:6px 0}
-  .member-swiper .member-signature{font-size:15px;margin:8px 0;line-height:1.6}
-  .member-swiper .member-bio{font-size:14px;margin:6px 0 10px}
-  .member-swiper .bgm-btn{font-size:14px;padding:8px 18px}
-  .member-swiper-hint{text-align:center;color:var(--ink-3);font-size:12.5px;letter-spacing:2px;margin-bottom:6px}
+  .member-card{padding:10px}
+  .member-card .member-photo{margin-bottom:8px;border-radius:10px}
+  .member-card .member-name{font-size:15px;letter-spacing:1px}
+  .member-card .member-role{margin:2px 0}
+  .member-card .member-signature{font-size:12px;margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
