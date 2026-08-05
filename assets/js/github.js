@@ -61,7 +61,11 @@
 
   GH.readFile = async function(path){
     var j = await GH.api('contents/' + encPath(path));
-    return { content: atob(j.content.replace(/\n/g, '')), sha: j.sha };
+    var bin = atob(j.content.replace(/\n/g, ''));
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    var text = new TextDecoder('utf-8').decode(bytes);
+    return { content: text, sha: j.sha };
   };
 
   GH.writeFile = async function(path, content, message){
