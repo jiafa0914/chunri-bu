@@ -14,7 +14,7 @@
   <div class="container">
     <div class="section-head">
       <h2 class="section-title"><span class="dot"></span>成员风采<span class="dot"></span></h2>
-      <p class="section-sub">每一位游侠都有自己的照片、签名与专属旋律</p>
+      <p class="section-sub">点击成员查看详情 · 进入后会播放他/她的专属旋律</p>
     </div>
     <div class="grid grid-4" id="member-list"></div>
     <p class="hint" style="text-align:center;margin-top:26px">想更新自己的照片、签名或背景音乐？请联系社主获取你的专属编辑链接。</p>
@@ -25,13 +25,10 @@
 <script src="assets/js/github.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
-(async function(){
-  var data = await C.fetchJSON('members.json');
-  var list = (data.members || []).filter(function(m){ return m.active !== false; });
-  var box = document.getElementById('member-list');
-  box.innerHTML = list.map(function(m){
+(function(){
+  function memberCard(m){
     var photo = m.photo ? '<img src="' + C.esc(m.photo) + '" alt="">' : '<div class="ph-placeholder">' + C.esc((m.name || '?').slice(0,1)) + '</div>';
-    return '<article class="card member-card">' +
+    return '<article class="card member-card" data-id="' + C.esc(m.id) + '">' +
       '<div class="member-photo">' + photo + '</div>' +
       '<div class="member-name">' + C.esc(m.name) + '</div>' +
       '<div class="member-role"><span class="badge">' + C.esc(m.role || '') + '</span></div>' +
@@ -39,9 +36,40 @@
       '<div class="member-bio">' + C.esc(m.bio || '') + '</div>' +
       (m.bgm ? '<button class="bgm-btn" data-bgm="' + C.esc(m.bgm) + '">♪ 听曲</button>' : '') +
       '</article>';
-  }).join('') || '<p class="hint">暂无成员</p>';
-  C.setupBgm();
-})().catch(function(e){ console.error(e); });
+  }
+  function openMember(m){
+    C.openMember(m);
+    var photo = m.photo ? '<img src="' + C.esc(m.photo) + '" alt="">' : '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-family:var(--font-title);font-size:44px;color:var(--ink-3)">' + C.esc((m.name || '?').slice(0,1)) + '</div>';
+    C.modal.onClose = function(){ C.closeMember(); };
+    C.modal.open(
+      '<div class="modal-title">成员资料</div>' +
+      '<div class="member-detail">' +
+        '<div class="md-photo">' + photo + '</div>' +
+        '<div>' +
+          '<div class="md-name">' + C.esc(m.name) + '</div>' +
+          '<div style="margin-top:8px"><span class="badge">' + C.esc(m.role || '') + '</span>' + (m.title ? ' <span class="badge badge-gold">' + C.esc(m.title) + '</span>' : '') + '</div>' +
+          '<div class="md-sign">「' + C.esc(m.signature || '') + '」</div>' +
+          '<div class="md-bio">' + C.esc(m.bio || '') + '</div>' +
+          '<div style="margin-top:16px">' + (m.bgm ? '<button class="bgm-btn" data-bgm="' + C.esc(m.bgm) + '">♪ 听曲</button>' : '<span class="hint">这位游侠还没设置背景音乐</span>') + '</div>' +
+        '</div>' +
+      '</div>'
+    );
+    C.setupBgm();
+  }
+  (async function(){
+    var data = await C.fetchJSON('members.json');
+    var list = (data.members || []).filter(function(m){ return m.active !== false; });
+    var box = document.getElementById('member-list');
+    box.innerHTML = list.map(memberCard).join('') || '<p class="hint">暂无成员</p>';
+    box.querySelectorAll('.member-card').forEach(function(card){
+      card.addEventListener('click', function(){
+        var m = list.find(function(x){ return x.id === card.dataset.id; });
+        if(m) openMember(m);
+      });
+    });
+    C.setupBgm();
+  })().catch(function(e){ console.error(e); });
+})();
 </script>
 </body>
 </html>
