@@ -371,6 +371,13 @@
   async function viewSignups(actId){
     var act = activities.activities.find(function(a){ return a.id === actId; });
     var title = act ? act.title : '活动';
+    function localTime(iso){
+      if(!iso) return '';
+      var d = new Date(iso);
+      if(isNaN(d.getTime())) return '';
+      var p = function(n){ return (n<10?'0':'')+n; };
+      return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
+    }
     try {
       await CB.ensureAnon();
       var r = await CB.coll('signups').where({ activityId: actId }).limit(200).get();
@@ -379,7 +386,7 @@
         return '<div style="padding:8px 0;border-bottom:1px dashed var(--line)">' +
           '<b>' + C.esc(s.name||'') + '</b>' + (s.gameId ? ' <span class="hint">ID：' + C.esc(s.gameId) + '</span>' : '') +
           (s.note ? '<div class="hint">' + C.esc(s.note) + '</div>' : '') +
-          '<div class="hint" style="font-size:12px;color:var(--ink-3)">' + C.esc(String(s.createdAt||'').replace('T',' ').slice(0,16)) + '</div>' +
+          '<div class="hint" style="font-size:12px;color:var(--ink-3)">' + C.esc(localTime(s.createdAt)) + '</div>' +
           '</div>';
       }).join('') : '<p class="hint">还没有人报名这个活动</p>';
       C.modal.open('<div class="modal-title">报名详情 · ' + C.esc(title) + '</div>' +
