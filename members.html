@@ -31,11 +31,9 @@
 (function(){
   function memberCard(m){
     var photo = m.photo ? '<img src="' + C.esc(m.photo) + '" alt="">' : '<div class="ph-placeholder">' + C.esc((m.name || '?').slice(0,1)) + '</div>';
-    return '<article class="card member-card" data-id="' + C.esc(m.id) + '">' +
+    return '<article class="member-cell" data-id="' + C.esc(m.id) + '">' +
       '<div class="member-photo">' + photo + '</div>' +
       '<div class="member-name">' + C.esc(m.name) + '</div>' +
-      '<div class="member-role"><span class="badge">' + C.esc(m.role || '') + '</span></div>' +
-      (m.signature ? '<div class="member-signature">「' + C.esc(m.signature) + '」</div>' : '') +
       '</article>';
   }
   function openMember(m){
@@ -89,9 +87,9 @@
       var data = await C.fetchJSON('members.json');
       list = (data.members || []).filter(function(m){ return m.active !== false; });
     }
-    box.className = 'grid grid-4';
+    box.className = 'member-wall';
     box.innerHTML = list.map(memberCard).join('') || '<p class="hint">暂无成员</p>';
-    box.querySelectorAll('.member-card').forEach(function(card){
+    box.querySelectorAll('.member-cell').forEach(function(card){
       card.addEventListener('click', function(){
         var m = list.find(function(x){ return x.id === card.dataset.id; });
         if(m) openMember(m);
