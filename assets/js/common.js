@@ -1,4 +1,4 @@
-/* 椿日部 · 公共脚本：页面壳、工具函数、全局音乐播放器 */
+/* 椿日部 · 公共脚本：页面壳、官网音乐、成员音乐切换、工具函数 */
 (function(){
   var C = window.C = window.C || {};
 
@@ -36,7 +36,8 @@
 
   var NAV = [
     ['index.html','首页'], ['about.html','关于'], ['members.html','成员'],
-    ['activities.html','活动'], ['guides.html','攻略'], ['daily.html','江湖日报'], ['recruit.html','招新']
+    ['activities.html','活动'], ['guides.html','攻略'], ['daily.html','江湖日报'],
+    ['gallery.html','相册'], ['recruit.html','招新']
   ];
 
   C.injectShell = function(){
@@ -61,55 +62,125 @@
         '<footer class="site-footer"><div class="footer-inner">' +
         '<div class="footer-text" id="footer-text">椿日部 · 燕云十六声百业社团</div>' +
         '<div class="footer-links">' +
-        '<a href="admin.html">管理</a>' +
-        '<a href="member-edit.html">成员资料</a>' +
+          '<a href="admin.html">管理</a>' +
+          '<a href="member-edit.html">成员资料</a>' +
         '</div>' +
         '<img class="footer-seal" src="assets/svg/seal.svg" alt="椿日部印章">' +
         '</div></footer>';
     }
+    /* 官网音乐浮动按钮 */
+    if(!document.getElementById('site-bgm-btn')){
+      var b = document.createElement('button');
+      b.id = 'site-bgm-btn'; b.className = 'site-bgm-btn'; b.textContent = '♪'; b.title = '官网背景音乐';
+      b.style.display = 'none';
+      b.addEventListener('click', C.toggleSiteBgm);
+      document.body.appendChild(b);
+      siteBtn = b;
+    }
     C.fetchJSON('config.json').then(function(cfg){
       var ft = document.getElementById('footer-text');
       if(ft && cfg && cfg.site && cfg.site.footer) ft.textContent = cfg.site.footer;
+      if(cfg && cfg.site) C.setSiteBgm(cfg.site.bgm || '');
     }).catch(function(){});
   };
 
-  /* ---------- 全局背景音乐播放器 ---------- */
+  /* ============ 音乐播放器（官网 / 成员 自动切换） ============ */
   var audio = new Audio();
   audio.preload = 'none';
-  var currentBgm = '';
-  function norm(u){ try { return new URL(u, location.href).href; } catch(e){ return u; } }
-  function resetBtns(){
-    document.querySelectorAll('.bgm-btn').forEach(function(b){
-      b.classList.remove('playing');
-      b.textContent = '♪ 听曲';
-    });
-  }
-  audio.addEventListener('ended', function(){ currentBgm = ''; resetBtns(); });
+  var siteBgm = '';
+  var currentMode = 'none';   // none | site | member
+  var siteWasPlaying = false;
+  var siteBtn = null;
 
-  C.bgm = function(url, btn){
-    var target = norm(url);
-    if(currentBgm && currentBgm === target && !audio.paused){
-      audio.pause();
-      currentBgm = '';
-      resetBtns();
-      return;
+  function norm(u){ try { return new URL(u, location.href).href; } catch(e){ return u; } }
+  function refreshSiteBtn(){
+    if(!siteBtn) return;
+    if(currentMode === 'site' && !audio.paused){
+      siteBtn.classList.add('playing'); siteBtn.textContent = '⏸'; siteBtn.title = '暂停官网音乐';
+    } else {
+      siteBtn.classList.remove('playing'); siteBtn.textContent = '♪';
+      siteBtn.title = (currentMode === 'member' && !audio.paused) ? '正在播放成员音乐' : '播放官网音乐';
     }
-    if(audio.src && norm(audio.src) !== target) audio.src = target;
-    if(!audio.src) audio.src = target;
-    currentBgm = target;
-    audio.play().then(function(){
-      resetBtns();
-      if(btn){ btn.classList.add('playing'); btn.textContent = '⏸ 停曲'; }
-    }).catch(function(){ C.toast('无法播放音乐，请检查链接', 'err'); currentBgm = ''; });
+  }
+  audio.addEventListener('ended', function(){ if(currentMode === 'member') currentMode = 'none'; refreshSiteBtn(); });
+  audio.addEventListener('play', refreshSiteBtn);
+  audio.addEventListener('pause', refreshSiteBtn);
+
+  C.setSiteBgm = function(url){
+    siteBgm = url || '';
+    if(siteBtn) siteBtn.style.display = siteBgm ? '' : 'none';
+  };
+  C.toggleSiteBgm = function(){
+    if(!siteBgm) return;
+    if(currentMode === 'site' && !audio.paused){
+      audio.pause(); currentMode = 'none'; refreshSiteBtn(); return;
+    }
+    currentMode = 'site';
+    audio.src = siteBgm;
+    audio.play().then(refreshSiteBtn).catch(function(){ currentMode = 'none'; C.toast('无法播放音乐', 'err'); refreshSiteBtn(); });
+  };
+  C.playMemberBgm = function(url){
+    if(!url) return;
+    currentMode = 'member';
+    audio.src = url;
+    audio.play().then(refreshSiteBtn).catch(function(){ C.toast('无法播放音乐，请检查链接', 'err'); });
+    refreshSiteBtn();
+  };
+  /* 打开成员详情：记住官网音乐是否在播，然后播放该成员音乐 */
+  C.openMember = function(m){
+    siteWasPlaying = (currentMode === 'site' && !audio.paused);
+    if(m && m.bgm){ C.playMemberBgm(m.bgm); }
+    else { audio.pause(); currentMode = 'none'; refreshSiteBtn(); }
+  };
+  /* 关闭成员详情：恢复官网音乐 */
+  C.closeMember = function(){
+    if(siteWasPlaying){
+      currentMode = 'site';
+      audio.src = siteBgm;
+      audio.play().catch(function(){});
+      refreshSiteBtn();
+    } else if(currentMode === 'member'){
+      audio.pause(); currentMode = 'none'; refreshSiteBtn();
+    }
+    siteWasPlaying = false;
   };
 
+  /* 首次点击页面任意处：自动开始官网音乐（除非点在音乐按钮上） */
+  var firstInteraction = true;
+  document.addEventListener('click', function(e){
+    if(!firstInteraction) return;
+    firstInteraction = false;
+    if(e.target && e.target.closest && e.target.closest('#site-bgm-btn')) return;
+    if(siteBgm && currentMode === 'none'){
+      currentMode = 'site';
+      audio.src = siteBgm;
+      audio.play().catch(function(){ currentMode = 'none'; });
+      refreshSiteBtn();
+    }
+  });
+
+  /* 成员卡片上的「♪ 听曲」按钮 */
   C.setupBgm = function(){
     document.querySelectorAll('.bgm-btn').forEach(function(btn){
-      btn.addEventListener('click', function(){ C.bgm(btn.dataset.bgm, btn); });
+      btn.addEventListener('click', function(ev){
+        if(ev) ev.stopPropagation();
+        var url = btn.dataset.bgm;
+        if(currentMode === 'member' && !audio.paused && norm(audio.src) === norm(url)){
+          audio.pause(); currentMode = 'none'; resetBtns(); refreshSiteBtn(); return;
+        }
+        C.playMemberBgm(url);
+        resetBtns();
+        btn.classList.add('playing'); btn.textContent = '⏸ 停曲';
+      });
     });
   };
+  function resetBtns(){
+    document.querySelectorAll('.bgm-btn').forEach(function(b){
+      b.classList.remove('playing'); b.textContent = '♪ 听曲';
+    });
+  }
 
-  /* ---------- 图片压缩（用于上传前瘦身） ---------- */
+  /* ---------- 图片压缩 ---------- */
   C.compressImage = function(file, maxW, q){
     maxW = maxW || 1920; q = q || 0.85;
     var url = URL.createObjectURL(file);
@@ -129,15 +200,41 @@
     });
   };
 
-  /* ---------- 弹窗 ---------- */
+  /* 旋转图片并上传（相册用） */
+  C.rotateUpload = function(src, folder){
+    return new Promise(function(resolve, reject){
+      var img = new Image();
+      img.onload = function(){
+        var canvas = document.createElement('canvas');
+        canvas.width = img.height; canvas.height = img.width;
+        var ctx = canvas.getContext('2d');
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(Math.PI / 2);
+        ctx.drawImage(img, -img.width / 2, -img.height / 2);
+        canvas.toBlob(function(b){ b ? resolve(b) : reject(new Error('旋转失败')); }, 'image/jpeg', 0.9);
+      };
+      img.onerror = function(){ reject(new Error('读取图片失败')); };
+      img.src = src;
+    }).then(function(blob){
+      return GH.uploadAsset(blob, folder, GH.fileName('img') + '.jpg');
+    });
+  };
+  /* ---------- 弹窗（支持关闭回调，用于恢复官网音乐） ---------- */
   C.modal = {
+    onClose: null,
     open: function(html){
       var m = document.getElementById('modal');
       if(!m){ m = document.createElement('div'); m.id = 'modal'; m.className = 'modal-mask'; document.body.appendChild(m); }
       m.innerHTML = '<div class="modal"><button class="modal-close" onclick="C.modal.close()">✕</button>' + html + '</div>';
       m.classList.add('show');
     },
-    close: function(){ var m = document.getElementById('modal'); if(m) m.classList.remove('show'); }
+    close: function(){
+      var m = document.getElementById('modal');
+      if(m){
+        m.classList.remove('show');
+        if(C.modal.onClose){ var cb = C.modal.onClose; C.modal.onClose = null; cb(); }
+      }
+    }
   };
   document.addEventListener('keydown', function(e){ if(e.key === 'Escape') C.modal.close(); });
 
