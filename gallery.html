@@ -31,6 +31,8 @@
   <button class="lb-nav lb-next" onclick="LB.next()">›</button>
 </div>
 
+<script src="assets/js/vendor/cloudbase.full.js"></script>
+<script src="assets/js/cloudbase.js"></script>
 <script src="assets/js/github.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
@@ -75,13 +77,39 @@
   }
 
   (async function(){
-    var data = await C.fetchJSON('albums.json');
-    LB.albums = data.albums || [];
     var box = document.getElementById('album-list');
-    box.innerHTML = LB.albums.map(albumCard).join('') || '<p class="hint">相册还在建设中，敬请期待</p>';
+    var albums = [], usedCloud = false;
+    try {
+      await CB.ensureAnon();
+      var docs = await CB.listAlbums();
+      if(docs && docs.length){
+        usedCloud = true;
+        var need = [];
+        docs.forEach(function(a){ (a.images || []).forEach(function(im){ if(im && im.src) need.push(im.src); }); if(a.cover) need.push(a.cover); });
+        var urls = {};
+        try { urls = await CB.fileUrls(need); } catch(e){ console.warn(e); }
+        albums = docs.map(function(a){
+          return {
+            id: a._id || a.id,
+            title: a.title || '未命名相册',
+            desc: a.desc || '',
+            cover: a.cover ? (urls[a.cover] || '') : '',
+            images: (a.images || []).map(function(im){
+              return { src: im.src ? (urls[im.src] || '') : '', caption: im.caption || '' };
+            }).filter(function(im){ return im.src; })
+          };
+        });
+      }
+    } catch(e){ console.warn('云相册读取失败，使用旧数据：', e); }
+    if(!usedCloud){
+      var data = await C.fetchJSON('albums.json');
+      albums = data.albums || [];
+    }
+    LB.albums = albums;
+    box.innerHTML = albums.map(albumCard).join('') || '<p class="hint">相册还在建设中，敬请期待</p>';
     box.querySelectorAll('.album-card').forEach(function(card){
       card.addEventListener('click', function(){
-        var a = LB.albums.find(function(x){ return x.id === card.dataset.id; });
+        var a = albums.find(function(x){ return x.id === card.dataset.id; });
         if(a && a.images && a.images.length) LB.open(a, 0);
       });
     });
