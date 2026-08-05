@@ -17,9 +17,11 @@
     var fid = (ps.data && ps.data[0] && ps.data[0].photo) || '';
     add('fid=' + fid.substring(0,60));
     add('4 createSignedUrls');
-    try { var r = await app.storage().from().createSignedUrls([fid], 3600); add('4 result: ' + JSON.stringify(r)); } catch(e){ add('4 FAIL: ' + fmt(e)); }
+    try { var r = await app.storage.from().createSignedUrls([fid], 3600); add('4 result: ' + JSON.stringify(r)); } catch(e){ add('4 FAIL: ' + fmt(e)); }
     add('5 getPublicUrl');
-    try { var p = app.storage().from().getPublicUrl(fid); add('5 result: ' + JSON.stringify(p)); } catch(e){ add('5 FAIL: ' + fmt(e)); }
+    try { var p = app.storage.from().getPublicUrl(fid); add('5 result: ' + JSON.stringify(p)); } catch(e){ add('5 FAIL: ' + fmt(e)); }
+    add('6 getTempFileURL');
+    try { var t = await app.getTempFileURL({ fileList: [fid] }); add('6 result: ' + JSON.stringify(t)); } catch(e){ add('6 FAIL: ' + fmt(e)); }
     add('DONE');
   } catch(e){ add('FATAL: ' + fmt(e)); }
 })();
