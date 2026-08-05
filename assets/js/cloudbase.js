@@ -88,11 +88,11 @@
   /* ---------- 云数据库 ---------- */
   CB.coll = function(name){ init(); return app.database().collection(name); };
   CB.listProfiles = async function(){
-    var res = await CB.coll('profiles').get();
+    var res = await CB.coll('profiles').limit(100).get();
     return res && res.data ? res.data : [];
   };
   CB.listAlbums = async function(){
-    var res = await CB.coll('albums').get();
+    var res = await CB.coll('albums').limit(100).get();
     return res && res.data ? res.data : [];
   };
   CB.upsertDoc = async function(name, docId, data){
@@ -101,7 +101,7 @@
       return docId;
     }
     var r = await CB.coll(name).add(data);
-    return (r && (r.id || (r.data && r.data._id))) || '';
+    return (r && (r._id || r.id || (r.data && r.data._id))) || '';
   };
   CB.removeDoc = async function(name, docId){
     await CB.coll(name).doc(docId).remove();
