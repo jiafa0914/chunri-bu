@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>椿日部 · 官网二维码</title>
+<link rel="icon" href="assets/svg/seal.svg">
+<style>
+body{margin:0;background:#f7f1e3;font-family:"KaiTi","STKaiti","楷体",serif;color:#3a2e23;display:flex;justify-content:center;padding:30px 16px}
+.card{background:#fff;border:1px solid #d8c9a8;border-radius:12px;padding:28px 24px;max-width:420px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+h1{font-size:24px;margin:0 0 6px;letter-spacing:4px}
+p{color:#7a6a52;margin:6px 0}
+#qr{margin:20px 0}
+#qr img{width:260px;height:260px;border:1px solid #e2d6ba;border-radius:8px}
+.tip{background:#f4ead6;border-radius:8px;padding:10px 12px;font-size:14px;line-height:1.7;color:#6b5b43}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>椿日部</h1>
+  <p>燕云十六声 · 天涯阁 · 六级百业</p>
+  <div id="qr"></div>
+  <p style="word-break:break-all;font-size:13px">https://jiafa0914.github.io/chunri-bu/</p>
+  <div class="tip">📱 微信扫一扫 → 打开后点右上角「···」→ 选「在浏览器打开」<br>也可以长按二维码图片保存，发到群里给社友</div>
+</div>
+<script src="assets/js/vendor/qrcode.min.js"></script>
+<script>
+(function(){
+  try {
+    var qr = qrcode(0, 'M');
+    qr.addData('https://jiafa0914.github.io/chunri-bu/');
+    qr.make();
+    document.getElementById('qr').innerHTML = qr.createImgTag(6, 10);
+  } catch(e){ document.getElementById('qr').textContent = '二维码生成失败'; }
+})();
+</script>
+</body>
+</html>
