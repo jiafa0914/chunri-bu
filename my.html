@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的档案 · 椿日部</title>
+<link rel="icon" href="assets/svg/seal.svg">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div id="site-header-placeholder"></div>
+
+<div class="container" style="max-width:560px;padding-top:36px;padding-bottom:60px">
+  <div id="need-login" class="admin-card" style="display:none">
+    <h3>请先登录</h3>
+    <p class="hint" style="margin:10px 0">登录后才能设置自己的照片、签名和背景音乐。</p>
+    <div class="form-actions"><a class="btn btn-cinnabar btn-sm" href="login.html">去登录 / 注册</a></div>
+  </div>
+
+  <div id="profile-card" class="admin-card" style="display:none">
+    <h3>我的档案 <span id="my-role" class="badge" style="vertical-align:middle"></span></h3>
+    <p class="hint" style="margin-bottom:14px">这里的内容会展示在「成员」页；背景音乐会在别人点开你的详情时播放。</p>
+
+    <div class="grid grid-2">
+      <div class="field"><label>游戏昵称 *</label><input id="my-name" placeholder="江湖名号"></div>
+      <div class="field"><label>游戏 ID</label><input id="my-gameid" placeholder="游戏内名字/编号"></div>
+    </div>
+
+    <div class="field">
+      <label>照片</label>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <img id="my-photo-preview" src="assets/svg/plum.svg" alt="照片预览" style="width:88px;height:110px;object-fit:cover;border:1px solid var(--line);border-radius:6px;background:#faf6ea">
+        <div style="flex:1">
+          <input id="my-photo-file" type="file" accept="image/*">
+          <p class="hint" style="margin-top:6px">建议竖版照片，会自动压缩。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="field"><label>签名（座右铭）</label><input id="my-signature" placeholder="一蓑烟雨任平生"></div>
+    <div class="field"><label>简介</label><textarea id="my-bio" style="min-height:80px" placeholder="一句话介绍自己"></textarea></div>
+
+    <div class="field">
+      <label>我的背景音乐（BGM）</label>
+      <input id="my-bgm-file" type="file" accept="audio/*">
+      <p class="hint" id="my-bgm-hint" style="margin-top:6px">未设置 · 可上传 mp3（8MB 内）</p>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-cinnabar btn-sm" id="my-save">保存档案</button>
+      <a class="btn btn-paper btn-sm" href="members.html">看看成员页</a>
+    </div>
+  </div>
+</div>
+
+<div id="site-footer-placeholder"></div>
+<script src="assets/js/vendor/cloudbase.full.js"></script>
+<script src="assets/js/cloudbase.js"></script>
+<script src="assets/js/github.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function(){
+  var C = window.C, CB = window.CB;
+  function $(id){ return document.getElementById(id); }
+  var docId = null, newPhoto = null, newBgm = null, role = '';
+
+  function ts(){ return new Date().toISOString().replace(/[-:T]/g,'').slice(0,14) + Math.random().toString(36).slice(2,6); }
+
+  $('my-photo-file').addEventListener('change', function(){
+    var f = $('my-photo-file').files[0];
+    if(!f) return;
+    if(!/^image\//.test(f.type)){ C.toast('请选择图片文件', 'err'); return; }
+    newPhoto = f;
+    $('my-photo-preview').src = URL.createObjectURL(f);
+  });
+  $('my-bgm-file').addEventListener('change', function(){
+    var f = $('my-bgm-file').files[0];
+    if(!f) return;
+    if(!/^audio\//.test(f.type) && !/\.mp3$/i.test(f.name)){ C.toast('请选择音频文件（mp3 等）', 'err'); return; }
+    if(f.size > 8*1024*1024){ C.toast('音频请控制在 8MB 以内', 'err'); $('my-bgm-file').value=''; return; }
+    newBgm = f;
+    $('my-bgm-hint').textContent = '已选择：' + f.name + '（保存后生效）';
+  });
+
+  $('my-save').addEventListener('click', async function(){
+    var name = $('my-name').value.trim();
+    if(!name){ C.toast('请填写游戏昵称', 'err'); return; }
+    var btn = $('my-save');
+    btn.disabled = true; btn.textContent = '保存中…';
+    C.toast('正在保存…');
+    try {
+      var uid = CB.getUid();
+      var data = {
+        name: name,
+        gameId: $('my-gameid').value.trim(),
+        signature: $('my-signature').value.trim(),
+        bio: $('my-bio').value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+      if(newPhoto){
+        C.toast('正在上传照片…');
+        var pr = await CB.upload('member/' + uid + '/photo-' + ts() + '.jpg', newPhoto);
+        data.photo = pr.id || pr.path;
+        newPhoto = null;
+      }
+      if(newBgm){
+        C.toast('正在上传背景音乐…');
+        var br = await CB.upload('member/' + uid + '/bgm-' + ts() + '.mp3', newBgm);
+        data.bgm = br.id || br.path;
+        newBgm = null;
+      }
+      docId = await CB.upsertDoc('profiles', docId, data);
+      C.toast('档案已保存', 'ok');
+    } catch(e){
+      C.toast('保存失败：' + (e.message || e), 'err');
+    } finally {
+      btn.disabled = false; btn.textContent = '保存档案';
+    }
+  });
+
+  (async function(){
+    C.injectShell();
+    var ls = await CB.getLoginState();
+    if(!ls || !ls.user){
+      $('need-login').style.display = '';
+      return;
+    }
+    var uid = CB.getUid();
+    var email = CB.getEmail() || '';
+    var list = [];
+    try { list = await CB.listProfiles(); } catch(e){ console.warn(e); }
+    var mine = list.filter(function(p){ return p.uid === uid; })[0];
+    if(!mine){
+      role = (list.length === 0) ? '社主' : '成员';
+      var d = {
+        uid: uid,
+        name: email.split('@')[0] || '新成员',
+        email: email,
+        gameId: '',
+        role: role,
+        title: '',
+        signature: '',
+        bio: '',
+        photo: '',
+        bgm: '',
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      try {
+        var r = await CB.coll('profiles').add(d);
+        docId = r && (r.id || (r.data && r.data._id)) || '';
+      } catch(e){
+        // 若权限不允许创建，则退化为仅展示表单
+        docId = '';
+        C.toast('自动建档失败：' + (e.message || e), 'err');
+      }
+      $('my-name').value = d.name;
+    } else {
+      docId = mine._id || mine.id || '';
+      role = mine.role || '成员';
+      $('my-name').value = mine.name || '';
+      $('my-gameid').value = mine.gameId || '';
+      $('my-signature').value = mine.signature || '';
+      $('my-bio').value = mine.bio || '';
+      if(mine.photo){
+        var purl = await CB.fileUrl(mine.photo);
+        if(purl) $('my-photo-preview').src = purl;
+      }
+      if(mine.bgm){
+        $('my-bgm-hint').textContent = '已设置背景音乐（可重新上传替换）';
+      }
+    }
+    $('my-role').textContent = role;
+    $('profile-card').style.display = '';
+  })().catch(function(e){ console.warn(e); });
+})();
+</script>
+</body>
+</html>
