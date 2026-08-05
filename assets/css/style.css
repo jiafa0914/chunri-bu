@@ -280,3 +280,50 @@ input,textarea,select{font-family:inherit;font-size:14px}
 @media (max-width:900px){
   .me-grid{grid-template-columns:1fr!important}
 }
+/* ---------- 官网背景音乐按钮 ---------- */
+.site-bgm-btn{
+  position:fixed;right:22px;bottom:26px;z-index:80;
+  width:52px;height:52px;border-radius:50%;
+  border:1px solid var(--cinnabar);background:var(--paper);
+  color:var(--cinnabar);font-size:20px;line-height:1;
+  box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;
+  transition:all .25s;font-family:var(--font-title);
+}
+.site-bgm-btn:hover{transform:scale(1.08)}
+.site-bgm-btn.playing{background:var(--cinnabar);color:var(--paper);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(176,58,46,.45)}50%{box-shadow:0 0 0 12px rgba(176,58,46,0)}}
+
+/* ---------- 成员详情弹窗 ---------- */
+.member-detail{display:flex;gap:22px;align-items:flex-start}
+.member-detail .md-photo{width:200px;aspect-ratio:4/5;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:var(--paper-2);flex:none}
+.member-detail .md-photo img{width:100%;height:100%;object-fit:cover}
+.member-detail .md-name{font-family:var(--font-title);font-size:26px;letter-spacing:4px}
+.member-detail .md-sign{color:var(--cinnabar);font-family:var(--font-title);letter-spacing:2px;margin:8px 0;font-size:15px}
+.member-detail .md-bio{color:var(--ink-2);font-size:14.5px;margin-top:6px}
+@media (max-width:600px){.member-detail{flex-direction:column}.member-detail .md-photo{width:100%}}
+
+/* ---------- 相册 ---------- */
+.album-card{cursor:pointer}
+.album-cover{width:100%;aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:var(--paper-2);margin-bottom:12px;position:relative}
+.album-cover img{width:100%;height:100%;object-fit:cover}
+.album-count{font-size:12.5px;color:var(--ink-3);margin-top:4px}
+
+/* 灯箱 */
+.lightbox{position:fixed;inset:0;z-index:110;background:rgba(20,18,14,.94);display:none;align-items:center;justify-content:center;flex-direction:column;padding:20px}
+.lightbox.show{display:flex}
+.lightbox img{max-width:92vw;max-height:74vh;border:1px solid rgba(246,241,228,.3);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.lb-caption{color:var(--paper);font-family:var(--font-title);letter-spacing:2px;margin-top:14px;text-align:center}
+.lb-index{color:rgba(246,241,228,.6);font-size:13px;margin-top:6px}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(246,241,228,.15);border:none;color:var(--paper);font-size:26px;width:46px;height:46px;border-radius:50%;cursor:pointer}
+.lb-nav:hover{background:rgba(176,58,46,.75)}
+.lb-prev{left:18px}.lb-next{right:18px}
+.lb-close{position:absolute;top:16px;right:20px;background:none;border:none;color:var(--paper);font-size:28px;cursor:pointer}
+
+/* 相册管理 */
+.album-img-thumb{display:inline-block;margin:6px;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--paper-2);vertical-align:top}
+.album-img-thumb img{width:130px;height:98px;object-fit:cover;display:block;position:relative}
+.album-img-thumb .thumb-bar{display:flex;flex-direction:column;gap:4px;padding:6px;background:var(--paper)}
+.album-img-thumb .thumb-bar input{width:118px;font-size:12px;padding:2px 4px;border:1px solid var(--line);border-radius:3px}
+.album-img-thumb .thumb-actions{display:flex;gap:4px;flex-wrap:wrap}
+.album-img-thumb .thumb-actions button{font-size:12px;padding:2px 8px}
+.album-img-thumb .cover-tag{position:absolute;top:4px;left:4px;background:var(--cinnabar);color:var(--paper);font-size:11px;padding:1px 6px;border-radius:3px;z-index:2}
