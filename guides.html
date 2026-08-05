@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>攻略 · 椿日部</title>
+<link rel="icon" href="assets/svg/seal.svg">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div id="site-header-placeholder"></div>
+
+<section class="section">
+  <div class="container" style="max-width:860px">
+    <div class="section-head">
+      <h2 class="section-title"><span class="dot"></span>攻略库<span class="dot"></span></h2>
+      <p class="section-sub">新手入门 · 百业玩法 · 副本机制，都是社里游侠摸爬滚打出来的经验</p>
+    </div>
+    <div id="guide-list"></div>
+    <p class="hint" style="text-align:center;margin-top:20px">有独家心得想分享？投稿给社主，下期攻略就有你的一席之地。</p>
+  </div>
+</section>
+
+<div id="site-footer-placeholder"></div>
+<script src="assets/js/github.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(async function(){
+  var data = await C.fetchJSON('guides.json');
+  var list = data.guides || [];
+  var box = document.getElementById('guide-list');
+  box.innerHTML = list.map(function(g, i){
+    return '<div class="list-item" id="guide-' + i + '">' +
+      '<div class="list-item-head" onclick="document.getElementById(\'guide-' + i + '\').classList.toggle(\'open\')">' +
+      '<div><div class="list-item-title">' + C.esc(g.title) + '</div>' +
+      '<div class="list-item-meta"><span class="badge badge-gold">' + C.esc(g.category || '') + '</span></div></div>' +
+      '<span class="list-item-arrow">▶</span></div>' +
+      '<div class="list-item-body">' + (g.content || []).map(function(p){ return '<p>' + C.esc(p) + '</p>'; }).join('') + '</div></div>';
+  }).join('') || '<p class="hint">暂无攻略</p>';
+})().catch(function(e){ console.error(e); });
+</script>
+</body>
+</html>

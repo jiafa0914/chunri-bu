@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>招新 · 椿日部</title>
+<link rel="icon" href="assets/svg/seal.svg">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div id="site-header-placeholder"></div>
+
+<section class="section">
+  <div class="container" style="max-width:820px">
+    <div class="section-head">
+      <h2 class="section-title"><span class="dot"></span>加入椿日部<span class="dot"></span></h2>
+      <p class="section-sub">六级天涯阁 · 不肝不卷 · 不问归期</p>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <h3 class="card-title">我们是什么样的百业</h3>
+      <p class="card-text">椿日部是《燕云十六声》中的一座六级天涯阁百业，主推剧情探索与单人挑战，也欢迎组队同行。社里氛围轻松，不设 KPI，不强制活跃，只愿大家玩得自在。</p>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <h3 class="card-title">我们希望你是</h3>
+      <p class="card-text">· 喜欢燕云十六声，愿意常来江湖走走<br>· 有基本礼貌，社内不搞对立、不引战<br>· 新老皆可：新手我们带，老手带我们</p>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <h3 class="card-title">入社流程</h3>
+      <p class="card-text">① 通过下方联系方式找到社主 → ② 简单聊两句，确认意向 → ③ 加入百业，收到群号与活动日历 → ④ 开始你的江湖路。</p>
+    </div>
+
+    <div class="card" style="text-align:center">
+      <h3 class="card-title">联系方式</h3>
+      <p class="card-text" id="recruit-contact">请通过游戏内私聊或百业申请加入。</p>
+      <p class="hint" style="margin-top:10px">管理员可以在「管理」页更新这里的联系方式。</p>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer-placeholder"></div>
+<script src="assets/js/github.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(async function(){
+  var cfg = await C.fetchJSON('config.json');
+  var c = (cfg.site && cfg.site.contact) || {};
+  var lines = [];
+  if(c.qq) lines.push('QQ：' + C.esc(c.qq));
+  if(c.wechat) lines.push('微信：' + C.esc(c.wechat));
+  if(c.gameId) lines.push('游戏内 ID：' + C.esc(c.gameId));
+  if(lines.length) document.getElementById('recruit-contact').innerHTML = lines.join('<br>');
+})().catch(function(e){ console.error(e); });
+</script>
+</body>
+</html>

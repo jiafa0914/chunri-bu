@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect x="6" y="6" width="108" height="108" rx="12" fill="#b03a2e" stroke="#8f2f26" stroke-width="4"/>
+  <g fill="#f6f1e4" font-family="Kaiti SC,STKaiti,KaiTi,FangSong,serif" text-anchor="middle">
+    <text x="60" y="42" font-size="30">椿</text>
+    <text x="60" y="76" font-size="30">日</text>
+    <text x="60" y="110" font-size="30">部</text>
+  </g>
+</svg>

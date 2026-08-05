@@ -1,0 +1,17 @@
+{
+  "members": [
+    {
+      "id": "m001",
+      "name": "待定·社主",
+      "role": "社主",
+      "title": "百业社主",
+      "photo": "",
+      "signature": "一蓑烟雨任平生",
+      "bgm": "",
+      "bio": "椿日部社主。日常负责百业运转、组织活动，也是本站的管理员。",
+      "joinDate": "2025",
+      "active": true,
+      "editKey": ""
+    }
+  ]
+}

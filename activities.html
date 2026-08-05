@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>活动 · 椿日部</title>
+<link rel="icon" href="assets/svg/seal.svg">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div id="site-header-placeholder"></div>
+
+<section class="section">
+  <div class="container" style="max-width:860px">
+    <div class="section-head">
+      <h2 class="section-title"><span class="dot"></span>活动中心<span class="dot"></span></h2>
+      <p class="section-sub">百业战 · 众志凌霄 · 茶话会 · 每一次相聚都算数</p>
+    </div>
+    <div class="timeline" id="act-timeline"></div>
+    <div class="cta-band" style="margin-top:34px;border-radius:8px">
+      <h2>有什么想玩的？</h2>
+      <p>有想组织的活动、想开的副本，直接在社里说，社主帮你排期上线。</p>
+      <a class="btn btn-cinnabar" href="recruit.html">加入椿日部</a>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer-placeholder"></div>
+<script src="assets/js/github.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function(){
+  var current = null;
+  function openSignup(a){
+    current = a;
+    C.modal.open(
+      '<div class="modal-title">报名 · ' + C.esc(a.title) + '</div>' +
+      '<div class="field"><label>你的游戏昵称</label><input id="sg-name" placeholder="如：东风不识路"></div>' +
+      '<div class="field"><label>游戏内 ID（选填）</label><input id="sg-id"></div>' +
+      '<div class="field"><label>备注（选填）</label><textarea id="sg-note" style="min-height:60px"></textarea></div>' +
+      '<div class="form-actions"><button class="btn btn-cinnabar" onclick="C._sgSend()">生成报名信息</button>' +
+      '<button class="btn btn-paper" onclick="C.modal.close()">取消</button></div>'
+    );
+  }
+  C._sgSend = function(){
+    var name = document.getElementById('sg-name').value.trim();
+    if(!name){ C.toast('请填写游戏昵称', 'err'); return; }
+    var id = document.getElementById('sg-id').value.trim();
+    var note = document.getElementById('sg-note').value.trim();
+    var text = '【椿日部·活动报名】' + current.title + '\n日期：' + current.date + (current.time ? ' ' + current.time : '') + '\n游戏昵称：' + name + (id ? '\n游戏ID：' + id : '') + (note ? '\n备注：' + note : '');
+    if(navigator.clipboard){ navigator.clipboard.writeText(text).then(function(){ C.toast('报名信息已复制，发给社主即可', 'ok'); }); }
+    else C.toast('请截图本页信息发给社主');
+    C.modal.close();
+  };
+  (async function(){
+    var data = await C.fetchJSON('activities.json');
+    var list = data.activities || [];
+    var box = document.getElementById('act-timeline');
+    if(!list.length){ box.innerHTML = '<p class="hint">暂无活动</p>'; return; }
+    list.slice().sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); }).forEach(function(a){
+      var div = document.createElement('div');
+      div.className = 'tl-item';
+      div.innerHTML =
+        '<div class="tl-date">' + C.esc(a.date || '') + (a.time ? ' ' + C.esc(a.time) : '') + '</div>' +
+        '<div class="tl-title">' + C.esc(a.title) + ' <span class="badge">' + C.esc(a.type || '') + '</span> <span class="badge badge-dai">' + C.esc(a.status || '') + '</span></div>' +
+        '<div class="tl-meta">' + C.esc(a.location || '') + '</div>' +
+        '<div class="tl-desc">' + C.esc(a.desc || '') + '</div>' +
+        '<div style="margin-top:10px"><button class="btn btn-cinnabar btn-sm" data-signup="' + a.id + '">我要报名</button></div>';
+      div.querySelector('[data-signup]').addEventListener('click', function(){ openSignup(a); });
+      box.appendChild(div);
+    });
+  })().catch(function(e){ console.error(e); });
+})();
+</script>
+</body>
+</html>

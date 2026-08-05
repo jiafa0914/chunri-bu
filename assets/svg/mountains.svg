@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#efe7d2"/>
+      <stop offset="1" stop-color="#f7f2e6"/>
+    </linearGradient>
+    <linearGradient id="far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8d8877" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#a39c88" stop-opacity="0.28"/>
+    </linearGradient>
+    <linearGradient id="mid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4c4840" stop-opacity="0.62"/>
+      <stop offset="1" stop-color="#6b6556" stop-opacity="0.30"/>
+    </linearGradient>
+    <linearGradient id="near" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c2923" stop-opacity="0.88"/>
+      <stop offset="1" stop-color="#3c3931" stop-opacity="0.55"/>
+    </linearGradient>
+    <filter id="b1"><feGaussianBlur stdDeviation="18"/></filter>
+    <filter id="b2"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="b3"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1210" cy="170" r="86" fill="#efe3c4" opacity="0.85"/>
+  <circle cx="1210" cy="170" r="70" fill="#f6edda" opacity="0.9"/>
+  <g filter="url(#b1)">
+    <path d="M0 560 Q 180 420 360 480 T 760 450 T 1180 470 T 1600 520 L 1600 900 L 0 900 Z" fill="url(#far)"/>
+  </g>
+  <g filter="url(#b2)">
+    <path d="M0 640 Q 240 500 470 560 T 980 520 T 1600 600 L 1600 900 L 0 900 Z" fill="url(#mid)"/>
+  </g>
+  <g filter="url(#b3)">
+    <path d="M0 760 Q 220 620 420 690 T 900 650 T 1300 700 T 1600 660 L 1600 900 L 0 900 Z" fill="url(#near)"/>
+  </g>
+  <g fill="none" stroke="#4c463a" stroke-width="3" stroke-linecap="round" opacity="0.65">
+    <path d="M560 210 q 14 -18 30 -20 q 16 2 28 20"/>
+    <path d="M640 180 q 12 -15 26 -17 q 14 2 24 17"/>
+    <path d="M508 238 q 10 -13 22 -15 q 12 2 21 15"/>
+    <path d="M702 236 q 10 -13 22 -15 q 12 2 21 15"/>
+  </g>
+  <g opacity="0.5">
+    <ellipse cx="430" cy="640" rx="220" ry="34" fill="#f6f1e4"/>
+    <ellipse cx="1120" cy="720" rx="300" ry="40" fill="#f1e9d4"/>
+  </g>
+  <g transform="translate(1010 700)" opacity="0.8">
+    <path d="M0 0 h44 v14 h-44 z M20 -8 c -6 -2 -8 -8 -4 -12 c 4 -4 10 -2 12 4 c 2 -6 8 -8 12 -4 c 4 4 2 10 -4 12 M4 -2 l -12 -16 M40 -2 l 12 -16" fill="#2c2923" stroke="#2c2923" stroke-width="2"/>
+  </g>
+</svg>

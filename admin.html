@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理 · 椿日部</title>
+<link rel="icon" href="assets/svg/seal.svg">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div id="site-header-placeholder"></div>
+
+<div class="container admin-wrap" style="padding-top:36px;padding-bottom:60px">
+  <nav class="admin-nav" id="admin-nav">
+    <button data-panel="panel-conn" class="active">① 连接 GitHub</button>
+    <button data-panel="panel-bg">② 背景图</button>
+    <button data-panel="panel-settings">③ 站点设置</button>
+    <button data-panel="panel-ann">④ 公告</button>
+    <button data-panel="panel-about">⑤ 关于页</button>
+    <button data-panel="panel-members">⑥ 成员</button>
+    <button data-panel="panel-act">⑦ 活动</button>
+    <button data-panel="panel-guides">⑧ 攻略</button>
+    <button data-panel="panel-daily">⑨ 江湖日报</button>
+  </nav>
+
+  <div class="admin-main">
+
+    <!-- ① 连接 -->
+    <section class="admin-panel active" id="panel-conn">
+      <div class="admin-card">
+        <h3>连接 GitHub（管理员必填）</h3>
+        <div class="field"><label>仓库 Owner（GitHub 用户名）</label><input id="conn-owner" placeholder="例如 yourname"></div>
+        <div class="field"><label>仓库名（Repository name）</label><input id="conn-repo" placeholder="例如 chunri-bu"></div>
+        <div class="field">
+          <label>访问令牌 Token（GitHub Personal Access Token）</label>
+          <input id="conn-token" type="password" placeholder="github_pat_xxx...">
+          <div class="hint">Token 仅保存在你自己的浏览器本地，用于把修改提交回仓库。创建方法见 README 说明。</div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-cinnabar btn-sm" id="conn-save">保存并连接</button>
+          <button class="btn btn-paper btn-sm" id="conn-refresh">从仓库刷新数据</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ② 背景图 -->
+    <section class="admin-panel" id="panel-bg">
+      <div class="admin-card">
+        <h3>首页背景图（支持上传合照，上线后随时可换）</h3>
+        <img class="bg-preview" id="bg-preview" alt="当前背景图">
+        <p class="hint" id="bg-label" style="margin-bottom:10px"></p>
+        <div class="field">
+          <label>上传新背景图（自动压缩为合适尺寸）</label>
+          <input id="bg-file" type="file" accept="image/*">
+          <div class="hint">建议使用横图（如 16:9 合照），上传后会替换首页背景。</div>
+        </div>
+        <div id="bg-list"></div>
+      </div>
+    </section>
+
+    <!-- ③ 站点设置 -->
+    <section class="admin-panel" id="panel-settings">
+      <div class="admin-card">
+        <h3>站点基本信息</h3>
+        <div class="field"><label>百业名称</label><input id="set-name"></div>
+        <div class="field"><label>副标题</label><input id="set-subtitle" placeholder="燕云十六声 · 天涯阁 · 六级百业"></div>
+        <div class="grid grid-2">
+          <div class="field"><label>百业类型</label><input id="set-type" placeholder="天涯阁"></div>
+          <div class="field"><label>百业等级</label><input id="set-level" placeholder="6"></div>
+        </div>
+        <div class="grid grid-2">
+          <div class="field"><label>所在服务器</label><input id="set-server"></div>
+          <div class="field"><label>百业 ID（选填）</label><input id="set-guildid"></div>
+        </div>
+        <div class="field"><label>标语</label><input id="set-slogan" placeholder="不问归期，只问江湖"></div>
+        <div class="field"><label>成立年份</label><input id="set-founded"></div>
+        <div class="field"><label>页脚文字</label><input id="set-footer"></div>
+        <h3 style="margin-top:20px">联系方式（招新页展示）</h3>
+        <div class="grid grid-3">
+          <div class="field"><label>QQ</label><input id="set-qq"></div>
+          <div class="field"><label>微信</label><input id="set-wechat"></div>
+          <div class="field"><label>游戏内 ID</label><input id="set-gameid"></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-cinnabar btn-sm" id="settings-save">保存站点设置</button></div>
+      </div>
+    </section>
+
+    <!-- ④ 公告 -->
+    <section class="admin-panel" id="panel-ann">
+      <div class="admin-card">
+        <h3>最新公告（首页展示前 3 条）</h3>
+        <div id="ann-list"></div>
+        <div class="form-actions" style="margin-top:6px"><button class="btn btn-paper btn-sm" id="ann-add">＋ 新增公告</button></div>
+        <div style="margin-top:16px;border-top:1px dashed var(--line);padding-top:16px">
+          <h3 id="ann-form-title">新增公告</h3>
+          <div class="grid grid-2">
+            <div class="field"><label>日期</label><input id="ann-date" placeholder="2026-08-05"></div>
+            <div class="field"><label>标题</label><input id="ann-title"></div>
+          </div>
+          <div class="field"><label>内容</label><textarea id="ann-content"></textarea></div>
+          <div class="form-actions">
+            <button class="btn btn-cinnabar btn-sm" id="ann-save">保存公告</button>
+            <button class="btn btn-paper btn-sm hidden" id="ann-cancel">取消</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑤ 关于 -->
+    <section class="admin-panel" id="panel-about">
+      <div class="admin-card">
+        <h3>关于页内容（关于/理念/招新简介）</h3>
+        <div id="about-list"></div>
+        <div class="form-actions" style="margin-top:6px"><button class="btn btn-paper btn-sm" id="about-add">＋ 新增段落</button></div>
+        <div style="margin-top:16px;border-top:1px dashed var(--line);padding-top:16px">
+          <h3>编辑段落</h3>
+          <div class="field"><label>小标题</label><input id="ab-title"></div>
+          <div class="field"><label>内容</label><textarea id="ab-content"></textarea></div>
+          <div class="form-actions">
+            <button class="btn btn-cinnabar btn-sm" id="ab-save">保存</button>
+            <button class="btn btn-paper btn-sm hidden" id="ab-cancel">取消</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑥ 成员 -->
+    <section class="admin-panel" id="panel-members">
+      <div class="admin-card">
+        <h3>成员名单</h3>
+        <div id="member-list"></div>
+        <div class="form-actions" style="margin-top:6px"><button class="btn btn-paper btn-sm" id="member-add">＋ 新增成员</button></div>
+        <div style="margin-top:16px;border-top:1px dashed var(--line);padding-top:16px">
+          <h3 id="mem-form-title">新增成员</h3>
+          <div class="grid grid-2">
+            <div class="field"><label>名字 *</label><input id="mem-name"></div>
+            <div class="field"><label>职务</label><input id="mem-role" placeholder="社主 / 副社主 / 成员…"></div>
+          </div>
+          <div class="grid grid-2">
+            <div class="field"><label>称号（选填）</label><input id="mem-title"></div>
+            <div class="field"><label>入社时间</label><input id="mem-joindate" placeholder="2025"></div>
+          </div>
+          <div class="field">
+            <label>照片</label>
+            <div class="mini-upload">
+              <input id="mem-photo-url" placeholder="照片链接，或直接上传" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(255,252,243,.8)">
+              <input id="mem-photo-file" type="file" accept="image/*">
+            </div>
+            <img id="mem-photo-preview" src="assets/svg/plum.svg" alt="照片预览" style="width:80px;height:100px;object-fit:cover;margin-top:8px;border:1px solid var(--line);border-radius:4px">
+          </div>
+          <div class="field"><label>签名（座右铭）</label><input id="mem-signature" placeholder="一蓑烟雨任平生"></div>
+          <div class="field">
+            <label>背景音乐（BGM）</label>
+            <div class="mini-upload">
+              <input id="mem-bgm-url" placeholder="音乐链接，或直接上传 mp3（8MB 内）" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(255,252,243,.8)">
+              <input id="mem-bgm-file" type="file" accept="audio/*">
+            </div>
+          </div>
+          <div class="field"><label>简介</label><textarea id="mem-bio"></textarea></div>
+          <div class="field">
+            <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="mem-active" checked> 显示在成员列表中</label>
+          </div>
+          <div class="field">
+            <label>自助编辑密钥（发给该成员，用于设置自己的照片/签名/BGM）</label>
+            <div class="mini-upload">
+              <input id="mem-editkey" placeholder="留空则不开通自助编辑" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(255,252,243,.8)">
+              <button class="btn btn-paper btn-sm" id="mem-editkey-reg">随机生成</button>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-cinnabar btn-sm" id="mem-save">保存成员</button>
+            <button class="btn btn-paper btn-sm hidden" id="mem-cancel">取消</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑦ 活动 -->
+    <section class="admin-panel" id="panel-act">
+      <div class="admin-card">
+        <h3>活动中心</h3>
+        <div id="act-list"></div>
+        <div class="form-actions" style="margin-top:6px"><button class="btn btn-paper btn-sm" id="act-add">＋ 新增活动</button></div>
+        <div style="margin-top:16px;border-top:1px dashed var(--line);padding-top:16px">
+          <h3 id="act-form-title">新增活动</h3>
+          <div class="grid grid-2">
+            <div class="field"><label>标题 *</label><input id="act-title"></div>
+            <div class="field"><label>类型</label><input id="act-type" placeholder="百业战 / 副本 / 休闲…"></div>
+          </div>
+          <div class="grid grid-3">
+            <div class="field"><label>日期</label><input id="act-date" placeholder="2026-08-08"></div>
+            <div class="field"><label>时间</label><input id="act-time" placeholder="20:00"></div>
+            <div class="field"><label>状态</label><input id="act-status" placeholder="报名中 / 已结束…"></div>
+          </div>
+          <div class="field"><label>地点</label><input id="act-location" placeholder="游戏内 · 百业战"></div>
+          <div class="field"><label>介绍</label><textarea id="act-desc"></textarea></div>
+          <div class="form-actions">
+            <button class="btn btn-cinnabar btn-sm" id="act-save">保存活动</button>
+            <button class="btn btn-paper btn-sm hidden" id="act-cancel">取消</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑧ 攻略 -->
+    <section class="admin-panel" id="panel-guides">
+      <div class="admin-card">
+        <h3>攻略库</h3>
+        <div id="guide-list"></div>
+        <div class="form-actions" style="margin-top:6px"><button class="btn btn-paper btn-sm" id="guide-add">＋ 新增攻略</button></div>
+        <div style="margin-top:16px;border-top:1px dashed var(--line);padding-top:16px">
+          <h3 id="guide-form-title">新增攻略</h3>
+          <div class="grid grid-2">
+            <div class="field"><label>标题 *</label><input id="guide-title"></div>
+            <div class="field"><label>分类</label><input id="guide-category" placeholder="新手 / 百业 / 副本…"></div>
+          </div>
+          <div class="field"><label>内容（每行一段）</label><textarea id="guide-content" style="min-height:140px"></textarea></div>
+          <div class="form-actions">
+            <button class="btn btn-cinnabar btn-sm" id="guide-save">保存攻略</button>
+            <button class="btn btn-paper btn-sm hidden" id="guide-cancel">取消</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑨ 日报 -->
+    <section class="admin-panel" id="panel-daily">
+      <div class="admin-card">
+        <h3>江湖日报</h3>
+        <div id="daily-list"></div>
+        <div class="form-actions" style="margin-top:6px"><button class="btn btn-paper btn-sm" id="daily-add">＋ 新增一期</button></div>
+        <div style="margin-top:16px;border-top:1px dashed var(--line);padding-top:16px">
+          <h3 id="daily-form-title">新增一期日报</h3>
+          <div class="grid grid-3">
+            <div class="field"><label>期号</label><input id="daily-issue" placeholder="第一期"></div>
+            <div class="field"><label>日期</label><input id="daily-date" placeholder="2026-08-05"></div>
+            <div class="field"><label>标题 *</label><input id="daily-title"></div>
+          </div>
+          <div class="field"><label>内容（每行一段）</label><textarea id="daily-content" style="min-height:140px"></textarea></div>
+          <div class="form-actions">
+            <button class="btn btn-cinnabar btn-sm" id="daily-save">保存日报</button>
+            <button class="btn btn-paper btn-sm hidden" id="daily-cancel">取消</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="site-footer-placeholder"></div>
+<script src="assets/js/github.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/admin.js"></script>
+</body>
+</html>

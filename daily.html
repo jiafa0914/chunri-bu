@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>江湖日报 · 椿日部</title>
+<link rel="icon" href="assets/svg/seal.svg">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div id="site-header-placeholder"></div>
+
+<section class="section">
+  <div class="container" style="max-width:860px">
+    <div class="section-head">
+      <h2 class="section-title"><span class="dot"></span>江湖日报<span class="dot"></span></h2>
+      <p class="section-sub">记录椿日部的活跃、排行与趣闻 —— 每周一刊</p>
+    </div>
+    <div id="daily-list"></div>
+  </div>
+</section>
+
+<div id="site-footer-placeholder"></div>
+<script src="assets/js/github.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(async function(){
+  var data = await C.fetchJSON('daily.json');
+  var list = (data.issues || []).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  var box = document.getElementById('daily-list');
+  box.innerHTML = list.map(function(d, i){
+    return '<div class="list-item" id="daily-' + i + '">' +
+      '<div class="list-item-head" onclick="document.getElementById(\'daily-' + i + '\').classList.toggle(\'open\')">' +
+      '<div><div class="list-item-title">' + C.esc(d.issue || '') + ' · ' + C.esc(d.title) + '</div>' +
+      '<div class="list-item-meta">' + C.esc(d.date || '') + '</div></div>' +
+      '<span class="list-item-arrow">▶</span></div>' +
+      '<div class="list-item-body">' + (d.content || []).map(function(p){ return '<p>' + C.esc(p) + '</p>'; }).join('') + '</div></div>';
+  }).join('') || '<p class="hint">暂无日报</p>';
+})().catch(function(e){ console.error(e); });
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>关于 · 椿日部</title>
+<link rel="icon" href="assets/svg/seal.svg">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div id="site-header-placeholder"></div>
+
+<section class="section">
+  <div class="container" style="max-width:820px">
+    <div class="section-head"><h2 class="section-title"><span class="dot"></span>关于椿日部<span class="dot"></span></h2></div>
+    <div id="about-body"></div>
+    <div class="grid grid-2" style="margin-top:30px" id="about-facts"></div>
+  </div>
+</section>
+
+<div id="site-footer-placeholder"></div>
+<script src="assets/js/github.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(async function(){
+  var cfg = await C.fetchJSON('config.json');
+  var st = cfg.site;
+  var body = document.getElementById('about-body');
+  var facts = document.getElementById('about-facts');
+  body.innerHTML = (cfg.about || []).map(function(a){
+    return '<div class="card" style="margin-bottom:18px"><h3 class="card-title">' + C.esc(a.title) + '</h3><p class="card-text">' + C.esc(a.content) + '</p></div>';
+  }).join('');
+  facts.innerHTML =
+    '<div class="card" style="text-align:center"><div class="card-title">百业类型</div><div class="card-text" style="font-family:var(--font-title);font-size:20px;color:var(--cinnabar)">' + C.esc(st.type || '—') + '</div></div>' +
+    '<div class="card" style="text-align:center"><div class="card-title">百业等级</div><div class="card-text" style="font-family:var(--font-title);font-size:20px;color:var(--cinnabar)">' + C.esc(st.level || '—') + ' 级</div></div>';
+  var contact = st.contact || {};
+  var lines = [];
+  if(contact.qq) lines.push('QQ：' + C.esc(contact.qq));
+  if(contact.wechat) lines.push('微信：' + C.esc(contact.wechat));
+  if(contact.gameId) lines.push('游戏内：' + C.esc(contact.gameId));
+  if(lines.length){
+    var c = document.createElement('div');
+    c.className = 'card';
+    c.style.marginTop = '18px';
+    c.innerHTML = '<h3 class="card-title">联系方式</h3><p class="card-text">' + lines.join('<br>') + '</p>';
+    body.appendChild(c);
+  }
+})().catch(function(e){ console.error(e); });
+</script>
+</body>
+</html>
