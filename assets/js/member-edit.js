@@ -31,8 +31,8 @@
 
   async function init(){
     C.injectShell();
-    $('me-conn-owner').value = GH.repo().owner || '';
-    $('me-conn-repo').value = GH.repo().name || '';
+    $('me-conn-owner').value = GH.repo().owner || 'jiafa0914';
+    $('me-conn-repo').value = GH.repo().name || 'chunri-bu';
     $('me-conn-token').value = GH.token() || '';
     if(!mid){ showError('链接缺少成员编号（id）。'); return; }
     try {
