@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 · 椿日部</title>
+<link rel="icon" href="assets/svg/seal.svg">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div id="site-header-placeholder"></div>
+
+<div class="container" style="max-width:520px;padding-top:36px;padding-bottom:60px">
+  <div class="admin-card">
+    <h3 id="login-title">登录椿日部</h3>
+    <p class="hint" style="margin-bottom:14px">登录后可设置自己的照片、签名和背景音乐，也能给相册投稿。</p>
+
+    <div class="tabs" id="auth-tabs" style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn btn-cinnabar btn-sm" id="tab-login">登录</button>
+      <button class="btn btn-paper btn-sm" id="tab-reg">注册</button>
+    </div>
+
+    <!-- 登录 -->
+    <div id="form-login">
+      <div class="field"><label>邮箱</label><input id="lg-email" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label>密码</label><input id="lg-pwd" type="password" placeholder="请输入密码"></div>
+      <div class="form-actions">
+        <button class="btn btn-cinnabar btn-sm" id="lg-submit">登 录</button>
+      </div>
+      <p class="hint" style="margin-top:10px">没有账号？点上方「注册」，用邮箱+验证码 30 秒注册。</p>
+    </div>
+
+    <!-- 注册 -->
+    <div id="form-reg" style="display:none">
+      <div class="field">
+        <label>邮箱（用于登录，也会收到验证码）</label>
+        <input id="rg-email" type="email" placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label>验证码</label>
+        <div style="display:flex;gap:8px">
+          <input id="rg-code" placeholder="6 位验证码" style="flex:1">
+          <button class="btn btn-paper btn-sm" id="rg-send" style="white-space:nowrap">发送验证码</button>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>游戏昵称</label><input id="rg-name" placeholder="江湖名号"></div>
+        <div class="field"><label>设置密码</label><input id="rg-pwd" type="password" placeholder="至少 6 位"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-cinnabar btn-sm" id="rg-submit">注 册</button>
+      </div>
+      <p class="hint" style="margin-top:10px">注册即代表你是椿日部成员；第一位注册的成员会被设为「社主」管理员。</p>
+    </div>
+
+    <div id="auth-done" style="display:none">
+      <p style="margin:8px 0">✅ 已登录：<b id="done-email"></b></p>
+      <div class="form-actions">
+        <a class="btn btn-cinnabar btn-sm" href="my.html">进入我的档案</a>
+        <a class="btn btn-paper btn-sm" href="index.html">返回首页</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="site-footer-placeholder"></div>
+<script src="assets/js/vendor/cloudbase.full.js"></script>
+<script src="assets/js/cloudbase.js"></script>
+<script src="assets/js/github.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function(){
+  var C = window.C, CB = window.CB;
+  var verificationId = null;
+
+  function $(id){ return document.getElementById(id); }
+
+  function showLogin(){ $('form-login').style.display=''; $('form-reg').style.display='none'; $('login-title').textContent='登录椿日部'; }
+  function showReg(){ $('form-login').style.display='none'; $('form-reg').style.display=''; $('login-title').textContent='注册椿日部'; }
+
+  $('tab-login').addEventListener('click', function(){
+    $('tab-login').className='btn btn-cinnabar btn-sm'; $('tab-reg').className='btn btn-paper btn-sm';
+    showLogin();
+  });
+  $('tab-reg').addEventListener('click', function(){
+    $('tab-reg').className='btn btn-cinnabar btn-sm'; $('tab-login').className='btn btn-paper btn-sm';
+    showReg();
+  });
+
+  $('lg-submit').addEventListener('click', async function(){
+    var email = $('lg-email').value.trim(), pwd = $('lg-pwd').value;
+    if(!email || !pwd){ C.toast('请填写邮箱和密码', 'err'); return; }
+    C.toast('登录中…');
+    try {
+      await CB.signIn(email, pwd);
+      C.toast('登录成功', 'ok');
+      showDone();
+    } catch(e){ C.toast('登录失败：' + (e.message || e), 'err'); }
+  });
+
+  $('rg-send').addEventListener('click', async function(){
+    var email = $('rg-email').value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ C.toast('请先填写正确的邮箱', 'err'); return; }
+    C.toast('正在发送验证码…');
+    try {
+      var v = await CB.sendEmailCode(email);
+      verificationId = v && v.verification_id;
+      C.toast('验证码已发送，请查收邮箱（含垃圾箱）', 'ok');
+    } catch(e){ C.toast('发送失败：' + (e.message || e), 'err'); }
+  });
+
+  $('rg-submit').addEventListener('click', async function(){
+    var email = $('rg-email').value.trim();
+    var code = $('rg-code').value.trim();
+    var name = $('rg-name').value.trim();
+    var pwd = $('rg-pwd').value;
+    if(!email || !code || !name || !pwd){ C.toast('请填写完整信息', 'err'); return; }
+    if(pwd.length < 6){ C.toast('密码至少 6 位', 'err'); return; }
+    C.toast('注册中…');
+    try {
+      if(!verificationId) throw new Error('请先获取验证码');
+      var vr = await CB.verifyCode(verificationId, code);
+      var token = vr && vr.verification_token;
+      if(!token) throw new Error('验证码校验失败，请重试');
+      await CB.signUp({
+        email: email,
+        password: pwd,
+        verification_code: code,
+        verification_token: token,
+        name: name
+      });
+      C.toast('注册成功，已自动登录', 'ok');
+      showDone();
+    } catch(e){ C.toast('注册失败：' + (e.message || e), 'err'); }
+  });
+
+  function showDone(){
+    $('form-login').style.display='none';
+    $('form-reg').style.display='none';
+    $('auth-tabs').style.display='none';
+    $('login-title').textContent='欢迎加入椿日部';
+    $('done-email').textContent = CB.getEmail() || '已登录';
+    $('auth-done').style.display='';
+  }
+
+  (async function(){
+    C.injectShell();
+    var ls = await CB.getLoginState();
+    if(ls && ls.user){ showDone(); }
+  })().catch(function(e){ console.warn(e); });
+})();
+</script>
+</body>
+</html>
