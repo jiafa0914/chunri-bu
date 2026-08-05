@@ -7,22 +7,31 @@
   function add(s){ log.push(s); out.textContent = log.join('\n'); }
   function fmt(e){ try{return JSON.stringify({code:e&&e.code,message:e&&e.message,name:e&&e.name,raw:String(e)});}catch(_){return String(e);} }
   try {
-    add('1 init');
     var app = cloudbase.init({ env: 'chunri-bu-d7gvy3e6naad3ba52', region: 'ap-shanghai' });
-    add('2 anon');
-    try { await app.auth().signInAnonymously(); add('2 ok'); } catch(e){ add('2 FAIL: ' + fmt(e)); }
-    add('3 read profile');
+    await app.auth().signInAnonymously();
     var db = app.database();
-    var ps = await db.collection('profiles').limit(1).get();
-    var fid = (ps.data && ps.data[0] && ps.data[0].photo) || '';
-    add('fid=' + fid.substring(0,60));
-    add('4 createSignedUrls');
-    try { var r = await app.storage.from().createSignedUrls([fid], 3600); add('4 result: ' + JSON.stringify(r)); } catch(e){ add('4 FAIL: ' + fmt(e)); }
-    add('5 getPublicUrl');
-    try { var p = app.storage.from().getPublicUrl(fid); add('5 result: ' + JSON.stringify(p)); } catch(e){ add('5 FAIL: ' + fmt(e)); }
-    add('6 getTempFileURL');
-    try { var t = await app.getTempFileURL({ fileList: [fid] }); add('6 result: ' + JSON.stringify(t)); } catch(e){ add('6 FAIL: ' + fmt(e)); }
-    add('DONE');
+    var ps = await db.collection('profiles').limit(100).get();
+    var need = [];
+    (ps.data||[]).forEach(function(p){ if(p.photo) need.push(p.photo); });
+    add('总文件数=' + need.length);
+    add('step: 线上一次性批量 createSignedUrls(' + need.length + ')');
+    try {
+      var r = await app.storage.from().createSignedUrls(need, 3600);
+      var ok = (r.data||[]).filter(function(it){ return it && it.signedUrl; }).length;
+      add('成功 ' + ok + '/' + need.length + '  err=' + (r.error ? JSON.stringify(r.error) : 'null'));
+    } catch(e){ add('批量 FAIL: ' + fmt(e)); }
+    add('step: 分批每批15');
+    var total = 0;
+    for(var i=0;i<need.length;i+=15){
+      var batch = need.slice(i, i+15);
+      try {
+        var rr = await app.storage.from().createSignedUrls(batch, 3600);
+        var ok2 = (rr.data||[]).filter(function(it){ return it && it.signedUrl; }).length;
+        total += ok2;
+        add('  批' + (i/15) + ' (' + batch.length + ') -> ' + ok2 + ' 成功');
+      } catch(e){ add('  批' + (i/15) + ' FAIL: ' + fmt(e)); }
+    }
+    add('分批合计=' + total + '/' + need.length);
   } catch(e){ add('FATAL: ' + fmt(e)); }
 })();
 </script></body></html>
