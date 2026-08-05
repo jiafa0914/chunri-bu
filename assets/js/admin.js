@@ -35,10 +35,11 @@
   }
 
   /* ================= 连接 ================= */
+  var DEF_OWNER = 'jiafa0914', DEF_REPO = 'chunri-bu';
   function fillConn(){
     var r = GH.repo();
-    $('conn-owner').value = r.owner || '';
-    $('conn-repo').value = r.name || '';
+    $('conn-owner').value = r.owner || DEF_OWNER;
+    $('conn-repo').value = r.name || DEF_REPO;
     $('conn-token').value = GH.token() || '';
   }
   async function saveConn(){
