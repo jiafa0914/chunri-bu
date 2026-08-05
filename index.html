@@ -89,13 +89,9 @@
 (function(){
   function memberCard(m){
     var photo = m.photo ? '<img src="' + C.esc(m.photo) + '" alt="">' : '<div class="ph-placeholder">' + C.esc((m.name || '?').slice(0,1)) + '</div>';
-    return '<article class="card member-card">' +
+    return '<article class="member-cell">' +
       '<div class="member-photo">' + photo + '</div>' +
       '<div class="member-name">' + C.esc(m.name) + '</div>' +
-      '<div class="member-role"><span class="badge">' + C.esc(m.role || '') + '</span></div>' +
-      '<div class="member-signature">「' + C.esc(m.signature || '') + '」</div>' +
-      '<div class="member-bio">' + C.esc(m.bio || '') + '</div>' +
-      (m.bgm ? '<button class="bgm-btn" data-bgm="' + C.esc(m.bgm) + '">♪ 听曲</button>' : '') +
       '</article>';
   }
   function actCard(a){
@@ -139,6 +135,7 @@
     document.getElementById('act-list').innerHTML = (acts.activities || []).slice(0, 3).map(actCard).join('') || '<p class="hint">暂无活动</p>';
 
     var memList = document.getElementById('mem-list');
+    memList.className = 'member-wall';
     var mems4 = [];
     try {
       await CB.ensureAnon();
@@ -147,13 +144,13 @@
       docs.forEach(function(p){ if(p.active !== false){ if(p.photo) need.push(p.photo); if(p.bgm) need.push(p.bgm); } });
       var urls = {};
       try { urls = await CB.fileUrls(need); } catch(e){ console.warn(e); }
-      mems4 = docs.filter(function(p){ return p.active !== false; }).slice(0, 4).map(function(p){
+      mems4 = docs.filter(function(p){ return p.active !== false; }).slice(0, 8).map(function(p){
         return { name: p.name, role: p.role, signature: p.signature, bio: p.bio, photo: p.photo ? (urls[p.photo] || '') : '', bgm: p.bgm ? (urls[p.bgm] || '') : '' };
       });
     } catch(e){ console.warn('云端成员读取失败，使用旧数据', e); }
     if(!mems4.length){
       var oldMems = await C.fetchJSON('members.json');
-      mems4 = (oldMems.members || []).filter(function(m){ return m.active !== false; }).slice(0, 4);
+      mems4 = (oldMems.members || []).filter(function(m){ return m.active !== false; }).slice(0, 8);
     }
     memList.innerHTML = mems4.map(memberCard).join('') || '<p class="hint">暂无成员</p>';
 
