@@ -2,10 +2,15 @@
   "albums": [
     {
       "id": "almsftzyhb",
-      "title": "一些回忆",
-      "desc": "大合照",
+      "title": "ä¸äºåå¿",
+      "desc": "å¤§åç§",
       "cover": "",
-      "images": []
+      "images": [
+        {
+          "src": "assets/img/albums/almsftzyhb/img-20260805084948-xk6n.jpg",
+          "caption": ""
+        }
+      ]
     }
   ]
 }
