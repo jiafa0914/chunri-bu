@@ -3,8 +3,8 @@
   var C = window.C, GH = window.GH;
   function $(id){ return document.getElementById(id); }
 
-  var cfg = null, members = null, activities = null, guides = null, daily = null;
-  var annEdit = -1, aboutEdit = -1, memEdit = -1, actEdit = -1, guideEdit = -1, dailyEdit = -1;
+  var cfg = null, members = null, activities = null, guides = null, daily = null, albums = null;
+  var annEdit = -1, aboutEdit = -1, memEdit = -1, actEdit = -1, guideEdit = -1, dailyEdit = -1, albumEdit = -1;
 
   function loadAll(){
     var useApi = GH.ready();
@@ -17,7 +17,8 @@
       getJson('members.json').then(function(d){ members = d; }),
       getJson('activities.json').then(function(d){ activities = d; }),
       getJson('guides.json').then(function(d){ guides = d; }),
-      getJson('daily.json').then(function(d){ daily = d; })
+      getJson('daily.json').then(function(d){ daily = d; }),
+      getJson('albums.json').then(function(d){ albums = d; })
     ]);
   }
 
@@ -116,6 +117,7 @@
     $('set-slogan').value = s.slogan || '';
     $('set-founded').value = s.founded || '';
     $('set-footer').value = s.footer || '';
+    $('set-bgm').value = s.bgm || '';
     $('set-qq').value = (s.contact && s.contact.qq) || '';
     $('set-wechat').value = (s.contact && s.contact.wechat) || '';
     $('set-gameid').value = (s.contact && s.contact.gameId) || '';
@@ -131,6 +133,7 @@
     s.slogan = $('set-slogan').value.trim();
     s.founded = $('set-founded').value.trim();
     s.footer = $('set-footer').value.trim();
+    s.bgm = $('set-bgm').value.trim();
     s.contact = s.contact || {};
     s.contact.qq = $('set-qq').value.trim();
     s.contact.wechat = $('set-wechat').value.trim();
@@ -364,8 +367,141 @@
       .then(function(){ C.toast('已保存', 'ok'); renderAll(); })
       .catch(function(e){ C.toast('保存失败：' + e.message, 'err'); });
   }
+
+  /* ================= 相册 ================= */
+  function saveAlbumsFile(msg){
+    return GH.writeFile('albums.json', JSON.stringify(albums, null, 2), msg || '更新相册')
+      .then(function(){ C.toast('相册已保存', 'ok'); renderAlbums(); })
+      .catch(function(e){ C.toast('保存失败：' + e.message, 'err'); });
+  }
+  function renderAlbums(){
+    var box = $('album-list');
+    if(!albums || !albums.albums || !albums.albums.length){ box.innerHTML = '<p class="hint">暂无相册</p>'; return; }
+    box.innerHTML = albums.albums.map(function(a, i){
+      var cnt = (a.images || []).length;
+      return '<div class="item-row"><div class="row-top">' +
+        '<div><b>' + C.esc(a.title || '未命名') + '</b> <span class="hint">' + cnt + ' 张</span></div>' +
+        '<div class="row-actions"><button class="btn btn-paper btn-sm" data-e="' + i + '">编辑</button>' +
+        '<button class="btn btn-danger btn-sm" data-d="' + i + '">删除</button></div></div>' +
+        '<p class="hint" style="margin-top:6px">' + C.esc(a.desc || '') + '</p></div>';
+    }).join('');
+    box.querySelectorAll('[data-e]').forEach(function(b){ b.addEventListener('click', function(){ editAlbum(+b.dataset.e); }); });
+    box.querySelectorAll('[data-d]').forEach(function(b){ b.addEventListener('click', function(){ delAlbum(+b.dataset.d); }); });
+  }
+  function resetAlbumForm(){
+    albumEdit = -1;
+    $('album-title').value = ''; $('album-desc').value = '';
+    $('album-form-title').textContent = '新增相册';
+    $('album-cancel').classList.add('hidden');
+    $('album-edit-area').innerHTML = '';
+  }
+  function newAlbum(){ resetAlbumForm(); }
+  function editAlbum(i){
+    albumEdit = i;
+    var a = albums.albums[i];
+    $('album-title').value = a.title || ''; $('album-desc').value = a.desc || '';
+    $('album-form-title').textContent = '编辑相册 · ' + (a.title || '');
+    $('album-cancel').classList.remove('hidden');
+    renderAlbumEdit(i);
+  }
+  function saveAlbumInfo(){
+    var title = $('album-title').value.trim();
+    if(!title){ C.toast('请填写相册标题', 'err'); return; }
+    albums.albums = albums.albums || [];
+    if(albumEdit >= 0){
+      albums.albums[albumEdit].title = title;
+      albums.albums[albumEdit].desc = $('album-desc').value.trim();
+    } else {
+      albums.albums.unshift({ id: 'al' + Date.now().toString(36), title: title, desc: $('album-desc').value.trim(), cover: '', images: [] });
+    }
+    saveAlbumsFile('更新相册信息');
+  }
+  function delAlbum(i){
+    if(!confirm('删除相册「' + (albums.albums[i].title || '') + '」？')) return;
+    albums.albums.splice(i, 1);
+    if(albumEdit === i) resetAlbumForm();
+    saveAlbumsFile('删除相册');
+  }
+  function renderAlbumEdit(i){
+    var a = albums.albums[i];
+    var box = $('album-edit-area');
+    if(!a){ box.innerHTML = ''; return; }
+    var imgs = a.images || [];
+    box.innerHTML =
+      '<h3>管理图片（' + imgs.length + ' 张）</h3>' +
+      '<div class="field"><label>上传图片（可多选，自动压缩）</label><input id="album-img-file" type="file" accept="image/*" multiple></div>' +
+      '<div id="album-thumbs">' + imgs.map(function(img, j){
+        return '<span class="album-img-thumb">' +
+          (img.src === a.cover ? '<span class="cover-tag">封面</span>' : '') +
+          '<img src="' + C.esc(img.src) + '" alt="">' +
+          '<span class="thumb-bar">' +
+            '<input data-cap="' + j + '" value="' + C.esc(img.caption || '') + '" placeholder="图片说明">' +
+            '<span class="thumb-actions">' +
+              '<button class="btn btn-paper btn-sm" data-act="cover" data-idx="' + j + '">设封面</button>' +
+              '<button class="btn btn-paper btn-sm" data-act="rot" data-idx="' + j + '">旋转90°</button>' +
+              '<button class="btn btn-paper btn-sm" data-act="up" data-idx="' + j + '">↑上移</button>' +
+              '<button class="btn btn-paper btn-sm" data-act="down" data-idx="' + j + '">↓下移</button>' +
+              '<button class="btn btn-danger btn-sm" data-act="del" data-idx="' + j + '">删除</button>' +
+            '</span>' +
+          '</span></span>';
+      }).join('') + '</div>' +
+      '<div class="form-actions"><button class="btn btn-cinnabar btn-sm" id="album-imgs-save">保存图片修改</button></div>';
+    $('album-img-file').addEventListener('change', function(){ uploadAlbumImages(i, this.files); });
+    box.querySelectorAll('[data-cap]').forEach(function(inp){
+      inp.addEventListener('change', function(){ a.images[+inp.dataset.cap].caption = inp.value; });
+    });
+    box.querySelectorAll('[data-act]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var act = btn.dataset.act, idx = +btn.dataset.idx;
+        if(act === 'cover'){ a.cover = a.images[idx].src; renderAlbumEdit(i); C.toast('已设为封面，记得点「保存图片修改」'); }
+        else if(act === 'up'){ if(idx > 0){ var t = a.images[idx]; a.images[idx] = a.images[idx-1]; a.images[idx-1] = t; renderAlbumEdit(i); } }
+        else if(act === 'down'){ if(idx < a.images.length-1){ var t2 = a.images[idx]; a.images[idx] = a.images[idx+1]; a.images[idx+1] = t2; renderAlbumEdit(i); } }
+        else if(act === 'rot'){ rotateAlbumImage(i, idx); }
+        else if(act === 'del'){ if(confirm('删除这张图片？')){ a.images.splice(idx, 1); if(a.cover && !a.images.some(function(x){ return x.src === a.cover; })) a.cover = ''; renderAlbumEdit(i); C.toast('已删除，记得点保存'); } }
+      });
+    });
+    $('album-imgs-save').addEventListener('click', function(){ saveAlbumsFile('更新相册图片'); });
+  }
+  async function uploadAlbumImages(i, files){
+    var a = albums.albums[i];
+    a.images = a.images || [];
+    C.toast('正在上传 ' + files.length + ' 张…');
+    try {
+      for(var k = 0; k < files.length; k++){
+        var blob = await C.compressImage(files[k], 1600, 0.85);
+        var p = await GH.uploadAsset(blob, 'assets/img/albums/' + a.id, GH.fileName('img') + '.jpg');
+        a.images.push({ src: p, caption: '' });
+      }
+      await saveAlbumsFile('相册新增 ' + files.length + ' 张图片');
+      renderAlbumEdit(i);
+      C.toast('上传完成', 'ok');
+    } catch(e){ C.toast('上传失败：' + e.message, 'err'); }
+  }
+  async function rotateAlbumImage(i, idx){
+    var a = albums.albums[i];
+    var img = a.images[idx];
+    C.toast('正在旋转…');
+    try {
+      var newPath = await C.rotateUpload(img.src, 'assets/img/albums/' + a.id);
+      a.images[idx].src = newPath;
+      if(a.cover === img.src) a.cover = newPath;
+      await saveAlbumsFile('旋转图片');
+      renderAlbumEdit(i);
+      C.toast('旋转完成', 'ok');
+    } catch(e){ C.toast('旋转失败：' + e.message, 'err'); }
+  }
+  async function uploadSiteBgm(){
+    var f = $('set-bgm-file').files[0]; if(!f) return;
+    if(f.size > 8*1024*1024){ C.toast('音频请控制在 8MB 以内', 'err'); return; }
+    C.toast('正在上传官网音乐…');
+    try {
+      var p = await GH.uploadAsset(f, 'assets/music', GH.fileName('sitebgm') + '.mp3');
+      $('set-bgm').value = p;
+      C.toast('音乐已上传，点「保存站点设置」生效', 'ok');
+    } catch(e){ C.toast('上传失败：' + e.message, 'err'); }
+  }
   function renderAll(){
-    renderBg(); renderSettings(); renderAnn(); renderAbout(); renderMembers(); renderAct(); renderGuides(); renderDaily();
+    renderBg(); renderSettings(); renderAnn(); renderAbout(); renderMembers(); renderAct(); renderGuides(); renderDaily(); renderAlbums();
   }
 
   /* ================= 初始化 ================= */
@@ -398,6 +534,10 @@
     $('daily-add').addEventListener('click', resetDailyForm);
     $('daily-save').addEventListener('click', saveDaily);
     $('daily-cancel').addEventListener('click', resetDailyForm);
+    $('set-bgm-file').addEventListener('change', uploadSiteBgm);
+    $('album-add').addEventListener('click', newAlbum);
+    $('album-save').addEventListener('click', saveAlbumInfo);
+    $('album-cancel').addEventListener('click', resetAlbumForm);
 
     try { await loadAll(); renderAll(); } catch(e){ console.warn(e); }
     if(GH.ready()){
