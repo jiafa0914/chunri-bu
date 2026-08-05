@@ -1,3 +1,11 @@
 {
-  "albums": []
+  "albums": [
+    {
+      "id": "almsftzyhb",
+      "title": "一些回忆",
+      "desc": "大合照",
+      "cover": "",
+      "images": []
+    }
+  ]
 }
