@@ -8,6 +8,18 @@
     });
   };
 
+  C.pad = function(n){ return (n < 10 ? '0' : '') + n; };
+  C.today = function(){
+    var d = new Date();
+    return d.getFullYear() + '-' + C.pad(d.getMonth()+1) + '-' + C.pad(d.getDate());
+  };
+  C.fmtTime = function(iso){
+    if(!iso) return '';
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return '';
+    return d.getFullYear() + '-' + C.pad(d.getMonth()+1) + '-' + C.pad(d.getDate()) + ' ' + C.pad(d.getHours()) + ':' + C.pad(d.getMinutes());
+  };
+
   C.fetchJSON = function(path){
     return fetch(path + (path.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now(), {cache:'no-store'})
       .then(function(res){
