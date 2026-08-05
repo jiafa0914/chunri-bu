@@ -21,6 +21,7 @@
     <button data-panel="panel-act">⑦ 活动</button>
     <button data-panel="panel-guides">⑧ 攻略</button>
     <button data-panel="panel-daily">⑨ 江湖日报</button>
+    <button data-panel="panel-albums">⑩ 相册</button>
   </nav>
 
   <div class="admin-main">
@@ -75,6 +76,14 @@
         <div class="field"><label>标语</label><input id="set-slogan" placeholder="不问归期，只问江湖"></div>
         <div class="field"><label>成立年份</label><input id="set-founded"></div>
         <div class="field"><label>页脚文字</label><input id="set-footer"></div>
+        <div class="field">
+          <label>官网背景音乐（BGM）</label>
+          <div class="mini-upload">
+            <input id="set-bgm" placeholder="音乐链接，或直接上传 mp3（8MB 内）" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(255,252,243,.8)">
+            <input id="set-bgm-file" type="file" accept="audio/*">
+          </div>
+          <div class="hint">设置后官网右下角出现「♪」按钮；点成员详情会暂停官网音乐、播放该成员的专属音乐。</div>
+        </div>
         <h3 style="margin-top:20px">联系方式（招新页展示）</h3>
         <div class="grid grid-3">
           <div class="field"><label>QQ</label><input id="set-qq"></div>
@@ -242,6 +251,27 @@
             <button class="btn btn-paper btn-sm hidden" id="daily-cancel">取消</button>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ⑩ 相册 -->
+    <section class="admin-panel" id="panel-albums">
+      <div class="admin-card">
+        <h3>江湖相册</h3>
+        <div id="album-list"></div>
+        <div class="form-actions" style="margin-top:6px"><button class="btn btn-paper btn-sm" id="album-add">＋ 新增相册</button></div>
+        <div style="margin-top:16px;border-top:1px dashed var(--line);padding-top:16px">
+          <h3 id="album-form-title">新增相册</h3>
+          <div class="grid grid-2">
+            <div class="field"><label>相册标题 *</label><input id="album-title"></div>
+            <div class="field"><label>简介</label><input id="album-desc"></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-cinnabar btn-sm" id="album-save">保存相册信息</button>
+            <button class="btn btn-paper btn-sm hidden" id="album-cancel">取消</button>
+          </div>
+        </div>
+        <div style="margin-top:16px;border-top:1px dashed var(--line);padding-top:16px" id="album-edit-area"></div>
       </div>
     </section>
 
