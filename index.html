@@ -80,6 +80,8 @@
 </div>
 
 <div id="site-footer-placeholder"></div>
+<script src="assets/js/vendor/cloudbase.full.js"></script>
+<script src="assets/js/cloudbase.js"></script>
 <script src="assets/js/github.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
@@ -135,8 +137,24 @@
     var acts = await C.fetchJSON('activities.json');
     document.getElementById('act-list').innerHTML = (acts.activities || []).slice(0, 3).map(actCard).join('') || '<p class="hint">暂无活动</p>';
 
-    var mems = await C.fetchJSON('members.json');
-    document.getElementById('mem-list').innerHTML = (mems.members || []).filter(function(m){ return m.active !== false; }).slice(0, 4).map(memberCard).join('') || '<p class="hint">暂无成员</p>';
+    var memList = document.getElementById('mem-list');
+    var mems4 = [];
+    try {
+      await CB.ensureAnon();
+      var docs = await CB.listProfiles();
+      var need = [];
+      docs.forEach(function(p){ if(p.active !== false){ if(p.photo) need.push(p.photo); if(p.bgm) need.push(p.bgm); } });
+      var urls = {};
+      try { urls = await CB.fileUrls(need); } catch(e){ console.warn(e); }
+      mems4 = docs.filter(function(p){ return p.active !== false; }).slice(0, 4).map(function(p){
+        return { name: p.name, role: p.role, signature: p.signature, bio: p.bio, photo: p.photo ? (urls[p.photo] || '') : '', bgm: p.bgm ? (urls[p.bgm] || '') : '' };
+      });
+    } catch(e){ console.warn('云端成员读取失败，使用旧数据', e); }
+    if(!mems4.length){
+      var oldMems = await C.fetchJSON('members.json');
+      mems4 = (oldMems.members || []).filter(function(m){ return m.active !== false; }).slice(0, 4);
+    }
+    memList.innerHTML = mems4.map(memberCard).join('') || '<p class="hint">暂无成员</p>';
 
     var dl = await C.fetchJSON('daily.json');
     var issues = dl.issues || [];
