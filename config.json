@@ -3,16 +3,16 @@
     "name": "椿日部",
     "subtitle": "燕云十六声 · 天涯阁 · 六级百业",
     "type": "天涯阁",
-    "level": 6,
+    "level": "6",
     "server": "",
-    "guildId": "",
+    "guildId": "10441012",
     "slogan": "不问归期，只问江湖",
-    "founded": "2025",
+    "founded": "2025-04-09",
     "footer": "椿日部 · 燕云十六声百业社团 · 江湖路远，椿日可期",
     "contact": {
-      "qq": "",
-      "wechat": "",
-      "gameId": ""
+      "qq": "1760969635",
+      "wechat": "Gintama_Katsura",
+      "gameId": "0249446470"
     },
     "background": "assets/img/bg/bg-20260805074300-weme.jpg",
     "backgroundLabel": "背景图 · bg-20260805074300-weme.jpg",
