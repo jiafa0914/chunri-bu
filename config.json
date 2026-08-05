@@ -9,10 +9,17 @@
     "slogan": "不问归期，只问江湖",
     "founded": "2025",
     "footer": "椿日部 · 燕云十六声百业社团 · 江湖路远，椿日可期",
-    "contact": { "qq": "", "wechat": "", "gameId": "" },
-    "background": "assets/img/bg/hero-default.svg",
-    "backgroundLabel": "默认水墨山水",
-    "repo": { "owner": "", "name": "" }
+    "contact": {
+      "qq": "",
+      "wechat": "",
+      "gameId": ""
+    },
+    "background": "assets/img/bg/bg-20260805074300-weme.jpg",
+    "backgroundLabel": "自定义背景 · 90b0e9fbf05af293284f94d689f4cd4c.jpg",
+    "repo": {
+      "owner": "",
+      "name": ""
+    }
   },
   "announcements": [
     {
