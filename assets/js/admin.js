@@ -376,7 +376,7 @@
   }
   function renderAlbums(){
     var box = $('album-list');
-    if(!albums || !albums.albums || !albums.albums.length){ box.innerHTML = '<p class="hint">暂无相册</p>'; return; }
+    if(!albums || !albums.albums || !albums.albums.length){ box.innerHTML = '<p class="hint">还没有相册。先点上方「＋ 新增相册」创建，保存后会自动进入「上传照片」界面。</p>'; return; }
     box.innerHTML = albums.albums.map(function(a, i){
       var cnt = (a.images || []).length;
       return '<div class="item-row"><div class="row-top">' +
@@ -413,8 +413,9 @@
       albums.albums[albumEdit].desc = $('album-desc').value.trim();
     } else {
       albums.albums.unshift({ id: 'al' + Date.now().toString(36), title: title, desc: $('album-desc').value.trim(), cover: '', images: [] });
+      albumEdit = 0;
     }
-    saveAlbumsFile('更新相册信息');
+    saveAlbumsFile('更新相册信息').then(function(){ if(albumEdit >= 0) renderAlbumEdit(albumEdit); });
   }
   function delAlbum(i){
     if(!confirm('删除相册「' + (albums.albums[i].title || '') + '」？')) return;
