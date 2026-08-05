@@ -53,7 +53,7 @@
         '<img class="seal-sm" src="assets/svg/seal.svg" alt="椿日部印章">' +
         '<span class="brand-name">椿日部<small>燕云十六声 · 天涯阁</small></span>' +
         '</a>' +
-        '<nav class="nav">' + links + '</nav>' +
+'<nav class="nav">' + links + '</nav>' + '<div class="auth-chip" id="auth-chip"></div>' +
         '</div></header>';
     }
     var fp = document.getElementById('site-footer-placeholder');
@@ -63,7 +63,7 @@
         '<div class="footer-text" id="footer-text">椿日部 · 燕云十六声百业社团</div>' +
         '<div class="footer-links">' +
           '<a href="admin.html">管理</a>' +
-          '<a href="member-edit.html">成员资料</a>' +
+'<a href="login.html">登录</a>' +
         '</div>' +
         '<img class="footer-seal" src="assets/svg/seal.svg" alt="椿日部印章">' +
         '</div></footer>';
@@ -76,6 +76,25 @@
       b.addEventListener('click', C.toggleSiteBgm);
       document.body.appendChild(b);
       siteBtn = b;
+    }
+    /* 登录状态显示（仅当页面引入了云开发 SDK 时） */
+    if(window.CB){
+      (function(){
+        var chip = document.getElementById('auth-chip');
+        if(!chip) return;
+        CB.getLoginState().then(function(ls){
+          if(ls && ls.user){
+            chip.innerHTML = '<a href="my.html">我的档案</a><a href="#" id="auth-logout">退出</a>';
+            var lo = document.getElementById('auth-logout');
+            if(lo) lo.addEventListener('click', function(ev){
+              ev.preventDefault();
+              CB.signOut().then(function(){ location.reload(); }).catch(function(){ location.reload(); });
+            });
+          } else {
+            chip.innerHTML = '<a href="login.html">登录</a>';
+          }
+        }).catch(function(){ chip.innerHTML = '<a href="login.html">登录</a>'; });
+      })();
     }
     C.fetchJSON('config.json').then(function(cfg){
       var ft = document.getElementById('footer-text');
