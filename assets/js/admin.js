@@ -526,7 +526,7 @@
         doc.title = title; doc.desc = $('album-desc').value.trim();
       } else {
         var r = await CB.coll('albums').add({ id: 'al' + Date.now().toString(36), title: title, desc: $('album-desc').value.trim(), cover: '', images: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
-        albums.unshift({ _id: (r && r.id) || '', id: 'al' + Date.now().toString(36), title: title, desc: $('album-desc').value.trim(), cover: '', images: [] });
+        albums.unshift({ _id: (r && (r._id || r.id)) || '', id: 'al' + Date.now().toString(36), title: title, desc: $('album-desc').value.trim(), cover: '', images: [] });
         albumEdit = 0;
       }
       await renderAlbums();
