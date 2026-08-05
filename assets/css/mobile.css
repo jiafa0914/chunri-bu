@@ -5,7 +5,7 @@
 /* ---------- 成员头像墙（一目了然看多人） ---------- */
 .member-wall{display:grid;grid-template-columns:repeat(8,1fr);gap:10px}
 .member-cell{cursor:pointer;text-align:center}
-.member-cell .member-photo{aspect-ratio:1/1;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:var(--paper-2);margin-bottom:6px;transition:.2s}
+.member-cell .member-photo{aspect-ratio:1/1;border-radius:50%;overflow:hidden;border:1px solid var(--line);background:var(--paper-2);margin-bottom:6px;transition:.2s}
 .member-cell .member-photo:hover{border-color:var(--cinnabar)}
 .member-cell .member-photo img{width:100%;height:100%;object-fit:cover}
 .member-cell .member-name{font-size:12px;letter-spacing:1px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -39,7 +39,7 @@
   .grid-2,.grid-3{grid-template-columns:1fr}
   .grid-4{grid-template-columns:repeat(2,1fr)}
   .member-wall{grid-template-columns:repeat(4,1fr);gap:8px}
-  .member-cell .member-photo{border-radius:8px;margin-bottom:4px}
+  .member-cell .member-photo{border-radius:50%;margin-bottom:4px}
   .member-cell .member-name{font-size:11px}
 
   /* 相册：手机 2 列 */
