@@ -7,12 +7,17 @@
   var annEdit = -1, aboutEdit = -1, memEdit = -1, actEdit = -1, guideEdit = -1, dailyEdit = -1;
 
   function loadAll(){
+    var useApi = GH.ready();
+    function getJson(path){
+      if(useApi) return GH.readFile(path).then(function(r){ return JSON.parse(r.content); });
+      return C.fetchJSON(path);
+    }
     return Promise.all([
-      C.fetchJSON('config.json').then(function(d){ cfg = d; }),
-      C.fetchJSON('members.json').then(function(d){ members = d; }),
-      C.fetchJSON('activities.json').then(function(d){ activities = d; }),
-      C.fetchJSON('guides.json').then(function(d){ guides = d; }),
-      C.fetchJSON('daily.json').then(function(d){ daily = d; })
+      getJson('config.json').then(function(d){ cfg = d; }),
+      getJson('members.json').then(function(d){ members = d; }),
+      getJson('activities.json').then(function(d){ activities = d; }),
+      getJson('guides.json').then(function(d){ guides = d; }),
+      getJson('daily.json').then(function(d){ daily = d; })
     ]);
   }
 
