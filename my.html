@@ -149,7 +149,7 @@
       };
       try {
         var r = await CB.coll('profiles').add(d);
-        docId = r && (r.id || (r.data && r.data._id)) || '';
+        docId = r && (r._id || r.id || (r.data && r.data._id)) || '';
       } catch(e){
         // 若权限不允许创建，则退化为仅展示表单
         docId = '';
