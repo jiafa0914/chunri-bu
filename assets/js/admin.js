@@ -172,7 +172,7 @@
   }
   function saveAnn(){
     cfg.announcements = cfg.announcements || [];
-    var item = { date: $('ann-date').value.trim() || new Date().toISOString().slice(0,10), title: $('ann-title').value.trim(), content: $('ann-content').value.trim() };
+    var item = { date: $('ann-date').value.trim() || C.today(), title: $('ann-title').value.trim(), content: $('ann-content').value.trim() };
     if(!item.title){ C.toast('请填写标题', 'err'); return; }
     if(annEdit >= 0) cfg.announcements[annEdit] = item; else cfg.announcements.unshift(item);
     saveConfigFile('更新公告').then(function(){ renderAnn(); resetAnnForm(); });
