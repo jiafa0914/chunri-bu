@@ -5,15 +5,40 @@
 
   function encPath(p){ return p.split('/').map(encodeURIComponent).join('/'); }
 
+  function readCookie(name){
+    try {
+      var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+      return m ? decodeURIComponent(m[1]) : '';
+    } catch(e){ return ''; }
+  }
+  function writeCookie(name, val){
+    try { document.cookie = name + '=' + encodeURIComponent(val) + ';max-age=31536000;path=/;SameSite=Lax'; } catch(e){}
+  }
   GH.repo = function(){
     try {
       var r = JSON.parse(localStorage.getItem('chunri_repo') || '{}');
-      return (r && r.owner && r.name) ? {owner:r.owner, name:r.name} : {owner:'', name:''};
-    } catch(e){ return {owner:'', name:''}; }
+      if(r && r.owner && r.name) return {owner:r.owner, name:r.name};
+    } catch(e){}
+    try {
+      var c = JSON.parse(readCookie('chunri_repo') || '{}');
+      if(c && c.owner && c.name) return {owner:c.owner, name:c.name};
+    } catch(e){}
+    return {owner:'', name:''};
   };
-  GH.setRepo = function(owner, name){ localStorage.setItem('chunri_repo', JSON.stringify({owner:owner, name:name})); };
-  GH.token = function(){ return localStorage.getItem('chunri_token') || ''; };
-  GH.setToken = function(t){ if(t) localStorage.setItem('chunri_token', t); else localStorage.removeItem('chunri_token'); };
+  GH.setRepo = function(owner, name){
+    var v = JSON.stringify({owner:owner, name:name});
+    localStorage.setItem('chunri_repo', v);
+    writeCookie('chunri_repo', v);
+  };
+  GH.token = function(){
+    var t = localStorage.getItem('chunri_token');
+    if(t) return t;
+    return readCookie('chunri_token');
+  };
+  GH.setToken = function(t){
+    if(t){ localStorage.setItem('chunri_token', t); writeCookie('chunri_token', t); }
+    else { localStorage.removeItem('chunri_token'); try { document.cookie = 'chunri_token=;max-age=0;path=/'; } catch(e){} }
+  };
   GH.ready = function(){ var r = GH.repo(); return !!(r.owner && r.name && GH.token()); };
 
   GH.api = async function(path, opts){
