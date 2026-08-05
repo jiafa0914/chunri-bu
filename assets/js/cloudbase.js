@@ -48,33 +48,30 @@
     if(/^https?:/.test(fileId)) return fileId;
     init();
     try {
-      var p = app.storage.from().getPublicUrl(fileId);
-      if(p && p.data && p.data.publicUrl) return p.data.publicUrl;
-    } catch(e){}
-    try {
-      var r = await app.storage.from().createSignedUrl(fileId, 7*24*3600);
-      if(r && r.data && r.data.signedUrl) return r.data.signedUrl;
-    } catch(e){}
+      var r = await app.getTempFileURL({ fileList: [fileId] });
+      if(r && r.fileList && r.fileList.length && r.fileList[0].tempFileURL) return r.fileList[0].tempFileURL;
+    } catch(e){ console.warn(e); }
     return '';
   };
   CB.fileUrls = async function(fileIds){
     var out = {}, need = [];
     (fileIds || []).forEach(function(id){
       if(!id) return;
-      if(/^https?:/.test(id)){ out[id] = id; } else { need.push(id); }
+      var s = String(id).trim();
+      if(/^https?:\/\//i.test(s)){ out[s] = s; return; }
+      if(/^cloud:\/\//i.test(s)){ need.push(s); }
     });
     if(!need.length) return out;
     init();
-    try {
-      var r = await app.storage.from().createSignedUrls(need, 7*24*3600);
-      if(r && r.data){ r.data.forEach(function(it){ if(it && it.path && it.signedUrl) out[it.path] = it.signedUrl; }); }
-    } catch(e){}
-    for(var i = 0; i < need.length; i++){
-      if(out[need[i]]) continue;
+    for(var i = 0; i < need.length; i += 20){
+      var batch = need.slice(i, i + 20);
       try {
-        var p = app.storage.from().getPublicUrl(need[i]);
-        if(p && p.data && p.data.publicUrl) out[need[i]] = p.data.publicUrl;
-      } catch(e){}
+        var r = await app.getTempFileURL({ fileList: batch });
+        (r.fileList || []).forEach(function(it){
+          var fid = it.fileID || it.fileid || '';
+          if(fid && it.tempFileURL) out[fid] = it.tempFileURL;
+        });
+      } catch(e){ console.warn('fileUrls batch failed', e); }
     }
     return out;
   };
