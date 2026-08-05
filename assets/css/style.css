@@ -126,7 +126,7 @@ input,textarea,select{font-family:inherit;font-size:14px}
 }
 .card:hover{transform:translateY(-5px);box-shadow:0 14px 34px rgba(38,35,28,.16)}
 .card-title{font-family:var(--font-title);font-size:19px;letter-spacing:2px;margin-bottom:8px}
-.card-text{color:var(--ink-2);font-size:14.5px}
+.card-text{color:var(--ink-2);font-size:14.5px;white-space:pre-line}
 
 /* ---------- 徽章 ---------- */
 .badge{
@@ -186,7 +186,7 @@ input,textarea,select{font-family:inherit;font-size:14px}
 .list-item.open .list-item-arrow{transform:rotate(90deg)}
 .list-item-body{display:none;padding:4px 20px 20px;border-top:1px dashed var(--line)}
 .list-item.open .list-item-body{display:block}
-.list-item-body p{margin:10px 0;color:var(--ink-2);font-size:14.5px}
+.list-item-body p{margin:10px 0;color:var(--ink-2);font-size:14.5px;white-space:pre-line}
 
 /* ---------- 竖排文字 ---------- */
 .vtext{writing-mode:vertical-rl;font-family:var(--font-title);letter-spacing:8px;color:var(--ink-3);font-size:13px}
