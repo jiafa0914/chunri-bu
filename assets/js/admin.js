@@ -149,13 +149,11 @@
       return '<div class="item-row"><div class="row-top">' +
         '<div><b>' + C.esc(a.title) + '</b> <span class="hint">' + C.esc(a.date) + '</span></div>' +
         '<div class="row-actions"><button class="btn btn-paper btn-sm" data-e="' + i + '">编辑</button>' +
-        '<button class="btn btn-paper btn-sm" data-s="' + i + '">报名</button>' +
         '<button class="btn btn-danger btn-sm" data-d="' + i + '">删除</button></div></div>' +
         '<p style="font-size:13.5px;color:var(--ink-2);margin-top:6px">' + C.esc(a.content) + '</p></div>';
     }).join('');
     box.querySelectorAll('[data-e]').forEach(function(b){ b.addEventListener('click', function(){ editAnn(+b.dataset.e); }); });
     box.querySelectorAll('[data-d]').forEach(function(b){ b.addEventListener('click', function(){ delAnn(+b.dataset.d); }); });
-    box.querySelectorAll('[data-s]').forEach(function(b){ b.addEventListener('click', function(){ viewSignups(activities.activities[+b.dataset.s].id); }); });
   }
   function editAnn(i){
     annEdit = i;
@@ -348,11 +346,13 @@
       return '<div class="item-row"><div class="row-top">' +
         '<div><b>' + C.esc(a.title) + '</b> <span class="badge">' + C.esc(a.type||'') + '</span> <span class="badge badge-dai">' + C.esc(a.status||'') + '</span></div>' +
         '<div class="row-actions"><button class="btn btn-paper btn-sm" data-e="' + i + '">编辑</button>' +
+        '<button class="btn btn-paper btn-sm" data-s="' + i + '">报名</button>' +
         '<button class="btn btn-danger btn-sm" data-d="' + i + '">删除</button></div></div>' +
         '<p class="hint" style="margin-top:6px">' + C.esc(a.date||'') + ' ' + C.esc(a.time||'') + ' · ' + C.esc(a.location||'') + '</p></div>';
     }).join('');
     box.querySelectorAll('[data-e]').forEach(function(b){ b.addEventListener('click', function(){ editAct(+b.dataset.e); }); });
     box.querySelectorAll('[data-d]').forEach(function(b){ b.addEventListener('click', function(){ delAct(+b.dataset.d); }); });
+    box.querySelectorAll('[data-s]').forEach(function(b){ b.addEventListener('click', function(){ viewSignups(activities.activities[+b.dataset.s].id); }); });
   }
   function editAct(i){
     actEdit = i; var a = activities.activities[i];
