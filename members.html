@@ -17,11 +17,13 @@
       <p class="section-sub">点击成员查看详情 · 进入后会播放他/她的专属旋律</p>
     </div>
     <div class="grid grid-4" id="member-list"></div>
-    <p class="hint" style="text-align:center;margin-top:26px">想更新自己的照片、签名或背景音乐？请联系社主获取你的专属编辑链接。</p>
+    <p class="hint" style="text-align:center;margin-top:26px">想更新自己的照片、签名或背景音乐？<a href="login.html" style="color:var(--cinnabar)">登录</a>后进入<a href="my.html" style="color:var(--cinnabar)">我的档案</a>即可自助修改。</p>
   </div>
 </section>
 
 <div id="site-footer-placeholder"></div>
+<script src="assets/js/vendor/cloudbase.full.js"></script>
+<script src="assets/js/cloudbase.js"></script>
 <script src="assets/js/github.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
@@ -57,9 +59,36 @@
     C.setupBgm();
   }
   (async function(){
-    var data = await C.fetchJSON('members.json');
-    var list = (data.members || []).filter(function(m){ return m.active !== false; });
     var box = document.getElementById('member-list');
+    var list = [], usedCloud = false;
+    try {
+      await CB.ensureAnon();
+      var docs = await CB.listProfiles();
+      var actives = (docs || []).filter(function(p){ return p.active !== false; });
+      if(actives.length){
+        usedCloud = true;
+        var need = [];
+        actives.forEach(function(p){ if(p.photo) need.push(p.photo); if(p.bgm) need.push(p.bgm); });
+        var urls = {};
+        try { urls = await CB.fileUrls(need); } catch(e){ console.warn(e); }
+        list = actives.map(function(p){
+          return {
+            id: p._id || p.id || p.uid,
+            name: p.name || '未命名',
+            role: p.role || '',
+            title: p.title || '',
+            signature: p.signature || '',
+            bio: p.bio || '',
+            photo: p.photo ? (urls[p.photo] || '') : '',
+            bgm: p.bgm ? (urls[p.bgm] || '') : ''
+          };
+        });
+      }
+    } catch(e){ console.warn('云成员读取失败，使用旧数据：', e); }
+    if(!usedCloud){
+      var data = await C.fetchJSON('members.json');
+      list = (data.members || []).filter(function(m){ return m.active !== false; });
+    }
     box.innerHTML = list.map(memberCard).join('') || '<p class="hint">暂无成员</p>';
     box.querySelectorAll('.member-card').forEach(function(card){
       card.addEventListener('click', function(){
