@@ -67,7 +67,15 @@
 
     C.toast('正在保存…');
     try {
-      await GH.writeFile('members.json', JSON.stringify(members, null, 2), '成员 ' + me.name + ' 更新个人资料');
+      var fresh = await GH.readFile('members.json');
+      var data = JSON.parse(fresh.content);
+      var idx = -1;
+      for(var i=0;i<data.members.length;i++){ if(data.members[i].id === mid){ idx = i; break; } }
+      if(idx < 0){ C.toast('未找到你的资料，请重新打开编辑链接', 'err'); return; }
+      data.members[idx].photo = me.photo;
+      data.members[idx].signature = me.signature;
+      data.members[idx].bgm = me.bgm;
+      await GH.writeFile('members.json', JSON.stringify(data, null, 2), '成员 ' + me.name + ' 更新个人资料');
       renderPreview();
       C.toast('保存成功，刷新页面即可看到新资料', 'ok');
     } catch(e){ C.toast('保存失败：' + e.message, 'err'); }
