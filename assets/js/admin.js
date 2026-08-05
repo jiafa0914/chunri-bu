@@ -149,11 +149,13 @@
       return '<div class="item-row"><div class="row-top">' +
         '<div><b>' + C.esc(a.title) + '</b> <span class="hint">' + C.esc(a.date) + '</span></div>' +
         '<div class="row-actions"><button class="btn btn-paper btn-sm" data-e="' + i + '">编辑</button>' +
+        '<button class="btn btn-paper btn-sm" data-s="' + i + '">报名</button>' +
         '<button class="btn btn-danger btn-sm" data-d="' + i + '">删除</button></div></div>' +
         '<p style="font-size:13.5px;color:var(--ink-2);margin-top:6px">' + C.esc(a.content) + '</p></div>';
     }).join('');
     box.querySelectorAll('[data-e]').forEach(function(b){ b.addEventListener('click', function(){ editAnn(+b.dataset.e); }); });
     box.querySelectorAll('[data-d]').forEach(function(b){ b.addEventListener('click', function(){ delAnn(+b.dataset.d); }); });
+    box.querySelectorAll('[data-s]').forEach(function(b){ b.addEventListener('click', function(){ viewSignups(activities.activities[+b.dataset.s].id); }); });
   }
   function editAnn(i){
     annEdit = i;
@@ -366,6 +368,24 @@
     GH.writeFile('activities.json', JSON.stringify(activities,null,2), '更新活动').then(function(){ renderAct(); resetActForm(); C.toast('活动已保存','ok'); }).catch(function(e){ C.toast(e.message,'err'); });
   }
   function delAct(i){ if(!confirm('删除该活动？')) return; activities.activities.splice(i,1); GH.writeFile('activities.json', JSON.stringify(activities,null,2), '删除活动').then(function(){ renderAct(); }).catch(function(e){ C.toast(e.message,'err'); }); }
+  async function viewSignups(actId){
+    var act = activities.activities.find(function(a){ return a.id === actId; });
+    var title = act ? act.title : '活动';
+    try {
+      await CB.ensureAnon();
+      var r = await CB.coll('signups').where({ activityId: actId }).limit(200).get();
+      var list = (r.data || []).slice().sort(function(a,b){ return String(b.createdAt||'').localeCompare(String(a.createdAt||'')); });
+      var html = list.length ? list.map(function(s){
+        return '<div style="padding:8px 0;border-bottom:1px dashed var(--line)">' +
+          '<b>' + C.esc(s.name||'') + '</b>' + (s.gameId ? ' <span class="hint">ID：' + C.esc(s.gameId) + '</span>' : '') +
+          (s.note ? '<div class="hint">' + C.esc(s.note) + '</div>' : '') +
+          '<div class="hint" style="font-size:12px;color:var(--ink-3)">' + C.esc(String(s.createdAt||'').replace('T',' ').slice(0,16)) + '</div>' +
+          '</div>';
+      }).join('') : '<p class="hint">还没有人报名这个活动</p>';
+      C.modal.open('<div class="modal-title">报名详情 · ' + C.esc(title) + '</div>' +
+        '<p class="hint" style="margin-bottom:10px">共 ' + list.length + ' 人报名</p>' + html);
+    } catch(e){ C.toast('读取报名失败：' + (e.message || e), 'err'); }
+  }
 
   /* ================= 攻略 ================= */
   function renderGuides(){
