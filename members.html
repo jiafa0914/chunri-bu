@@ -6,6 +6,7 @@
 <title>成员 · 椿日部</title>
 <link rel="icon" href="assets/svg/seal.svg">
 <link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/mobile.css">
 </head>
 <body>
 <div id="site-header-placeholder"></div>
@@ -17,6 +18,7 @@
       <p class="section-sub">点击成员查看详情 · 进入后会播放他/她的专属旋律</p>
     </div>
     <div class="grid grid-4" id="member-list"></div>
+    <p class="member-swiper-hint" id="swipe-hint" style="display:none">← 左右滑动查看每位成员 →</p>
     <p class="hint" style="text-align:center;margin-top:26px">想更新自己的照片、签名或背景音乐？<a href="login.html" style="color:var(--cinnabar)">登录</a>后进入<a href="my.html" style="color:var(--cinnabar)">我的档案</a>即可自助修改。</p>
   </div>
 </section>
@@ -28,8 +30,18 @@
 <script src="assets/js/common.js"></script>
 <script>
 (function(){
-  function memberCard(m){
+  function memberCard(m, big){
     var photo = m.photo ? '<img src="' + C.esc(m.photo) + '" alt="">' : '<div class="ph-placeholder">' + C.esc((m.name || '?').slice(0,1)) + '</div>';
+    if(big){
+      return '<article class="card member-card" data-id="' + C.esc(m.id) + '">' +
+        '<div class="member-photo">' + photo + '</div>' +
+        '<div class="member-name">' + C.esc(m.name) + '</div>' +
+        '<div class="member-role"><span class="badge">' + C.esc(m.role || '') + '</span>' + (m.title ? ' <span class="badge badge-gold">' + C.esc(m.title) + '</span>' : '') + '</div>' +
+        '<div class="member-signature">「' + C.esc(m.signature || '') + '」</div>' +
+        '<div class="member-bio">' + C.esc(m.bio || '') + '</div>' +
+        (m.bgm ? '<button class="bgm-btn" data-bgm="' + C.esc(m.bgm) + '">♪ 听曲</button>' : '') +
+        '</article>';
+    }
     return '<article class="card member-card" data-id="' + C.esc(m.id) + '">' +
       '<div class="member-photo">' + photo + '</div>' +
       '<div class="member-name">' + C.esc(m.name) + '</div>' +
@@ -60,6 +72,7 @@
   }
   (async function(){
     var box = document.getElementById('member-list');
+    var isMobile = window.matchMedia('(max-width:768px)').matches;
     var list = [], usedCloud = false;
     try {
       await CB.ensureAnon();
@@ -89,7 +102,8 @@
       var data = await C.fetchJSON('members.json');
       list = (data.members || []).filter(function(m){ return m.active !== false; });
     }
-    box.innerHTML = list.map(memberCard).join('') || '<p class="hint">暂无成员</p>';
+    if(isMobile){ box.className = 'member-swiper'; document.getElementById('swipe-hint').style.display = ''; } else { box.className = 'grid grid-4'; }
+    box.innerHTML = list.map(function(m){ return memberCard(m, isMobile); }).join('') || '<p class="hint">暂无成员</p>';
     box.querySelectorAll('.member-card').forEach(function(card){
       card.addEventListener('click', function(){
         var m = list.find(function(x){ return x.id === card.dataset.id; });
