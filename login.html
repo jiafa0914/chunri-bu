@@ -45,7 +45,7 @@
       </div>
       <div class="grid grid-2">
         <div class="field"><label>确认密码</label><input id="rg-pwd2" type="password" placeholder="再输一次"></div>
-        <div class="field"><label>设置密码</label><input id="rg-pwd" type="password" placeholder="至少 6 位"></div>
+        <div class="field"><label>设置密码</label><input id="rg-pwd" type="password" placeholder="8~32 位，需含字母和数字"></div>
       </div>
       <div class="form-actions">
         <button class="btn btn-cinnabar btn-sm" id="rg-submit">注 册</button>
@@ -114,7 +114,7 @@
     var code = $('rg-code').value.trim();
     var pwd = $('rg-pwd').value;
     if(!email || !code || !pwd){ C.toast('请填写完整信息', 'err'); return; }
-    if(pwd.length < 6){ C.toast('密码至少 6 位', 'err'); return; } if(pwd !== $('rg-pwd2').value){ C.toast('两次密码不一致', 'err'); return; }
+    if(pwd.length < 8 || pwd.length > 32){ C.toast('密码需 8~32 位', 'err'); return; } if(!/[a-zA-Z]/.test(pwd) || !/[0-9]/.test(pwd)){ C.toast('密码需同时包含字母和数字', 'err'); return; } if(pwd !== $('rg-pwd2').value){ C.toast('两次密码不一致', 'err'); return; }
     C.toast('注册中…');
     try {
       if(!verificationId) throw new Error('请先获取验证码');
