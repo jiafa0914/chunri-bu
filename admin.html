@@ -12,6 +12,7 @@
 
 <div class="container admin-wrap" style="padding-top:36px;padding-bottom:60px">
   <nav class="admin-nav" id="admin-nav">
+    <button data-panel="panel-account">① 云账号</button>
     <button data-panel="panel-conn" class="active">① 连接 GitHub</button>
     <button data-panel="panel-bg">② 背景图</button>
     <button data-panel="panel-settings">③ 站点设置</button>
@@ -25,6 +26,32 @@
   </nav>
 
   <div class="admin-main">
+    <!-- 云账号 -->
+    <section class="admin-panel" id="panel-account">
+      <div class="admin-card">
+        <h3>① 云账号（管理成员和相册需要先登录）</h3>
+        <p class="hint" style="margin:8px 0">成员和相册数据保存在腾讯云 CloudBase；第一个注册的成员自动成为「社主」。上传图片/音乐走云存储，不会再出现“相册上传不了/乱码”的问题。</p>
+        <div id="acc-status" class="hint" style="margin:8px 0">检查登录状态…</div>
+        <div id="acc-login-form">
+          <div class="grid grid-2">
+            <div class="field"><label>邮箱</label><input id="acc-email" type="email" placeholder="you@example.com"></div>
+            <div class="field"><label>密码</label><input id="acc-pwd" type="password"></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-cinnabar btn-sm" id="acc-login">登录</button>
+            <a class="btn btn-paper btn-sm" href="login.html">注册新账号</a>
+          </div>
+        </div>
+        <div id="acc-logged" style="display:none">
+          <p style="margin:6px 0">✅ 已登录：<b id="acc-email-show"></b> <span class="badge" id="acc-role-show"></span></p>
+          <div class="form-actions">
+            <button class="btn btn-paper btn-sm" id="acc-logout">退出登录</button>
+            <button class="btn btn-paper btn-sm" id="acc-set-shepherd">把当前账号设为社主</button>
+            <a class="btn btn-paper btn-sm" href="my.html">我的档案</a>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- ① 连接 -->
     <section class="admin-panel active" id="panel-conn">
@@ -138,7 +165,11 @@
       <div class="admin-card">
         <h3>成员名单</h3>
         <div id="member-list"></div>
-        <div class="form-actions" style="margin-top:6px"><button class="btn btn-paper btn-sm" id="member-add">＋ 新增成员</button></div>
+        <div class="hint" style="margin:6px 0" id="mem-cloud-hint"></div>
+        <div class="form-actions" style="margin-top:6px">
+          <button class="btn btn-paper btn-sm" id="member-add">＋ 新增成员</button>
+          <button class="btn btn-paper btn-sm" id="mem-import">从旧数据导入</button>
+        </div>
         <div style="margin-top:16px;border-top:1px dashed var(--line);padding-top:16px">
           <h3 id="mem-form-title">新增成员</h3>
           <div class="grid grid-2">
@@ -279,6 +310,8 @@
 </div>
 
 <div id="site-footer-placeholder"></div>
+<script src="assets/js/vendor/cloudbase.full.js"></script>
+<script src="assets/js/cloudbase.js"></script>
 <script src="assets/js/github.js"></script>
 <script src="assets/js/common.js"></script>
 <script src="assets/js/admin.js"></script>
