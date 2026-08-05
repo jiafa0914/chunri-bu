@@ -1,0 +1,49 @@
+/* ============================================================
+   椿日部 · 移动端优化（Mobile Enhance）
+   ============================================================ */
+@media (max-width:768px){
+  body{font-size:15px}
+  .container{padding:0 16px}
+  .section{padding:40px 0}
+  .section-title{font-size:20px;letter-spacing:3px}
+  .section-sub{font-size:13px}
+  .brand-name{font-size:19px;letter-spacing:4px}
+  .brand .seal-sm{width:36px;height:36px}
+  .nav a{font-size:14px;padding:7px 9px;letter-spacing:1px}
+  .hero{min-height:68vh}
+  .hero-title{font-size:clamp(2.3rem,13vw,3.4rem);letter-spacing:9px;text-indent:9px}
+  .hero-sub{letter-spacing:4px}
+  .hero-slogan{font-size:14px;letter-spacing:2px}
+  .hero-actions .btn{padding:10px 20px;font-size:15px}
+  .hero-seal{width:66px;height:66px}
+  .btn{padding:9px 20px;font-size:14.5px}
+  .card{padding:14px}
+  .grid-2,.grid-3{grid-template-columns:1fr;gap:12px}
+  .grid-4{grid-template-columns:repeat(2,1fr);gap:12px}
+  .member-card .member-photo{aspect-ratio:1/1;border-radius:12px}
+  .member-card .member-bio{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .cta-band{padding:28px 16px;text-align:center}
+  .admin-card{padding:16px}
+  .list-item{padding:12px 12px}
+  .site-bgm-btn{width:46px;height:46px;right:16px;bottom:18px;font-size:18px}
+  .modal-box{max-height:86vh;overflow-y:auto}
+  .member-detail{flex-direction:column}
+  .member-detail .md-photo{width:100%;aspect-ratio:4/5}
+  .auth-chip a{font-size:12px;padding:4px 8px}
+}
+
+/* 成员滑动浏览（手机：左右滑动切换成员） */
+@media (max-width:768px){
+  #member-list.grid-4{display:block}
+  .member-swiper{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:14px;padding:4px 6px 16px;margin:0 -6px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .member-swiper::-webkit-scrollbar{display:none}
+  .member-swiper .member-card{flex:0 0 82%;scroll-snap-align:center;scroll-snap-stop:always;padding:18px 16px;text-align:center;cursor:pointer}
+  .member-swiper .member-photo{width:100%;aspect-ratio:1/1;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--paper-2);margin-bottom:14px}
+  .member-swiper .member-photo img{width:100%;height:100%;object-fit:cover}
+  .member-swiper .member-name{font-size:22px;letter-spacing:4px;font-family:var(--font-title)}
+  .member-swiper .member-role{margin:6px 0}
+  .member-swiper .member-signature{font-size:15px;margin:8px 0;line-height:1.6}
+  .member-swiper .member-bio{font-size:14px;margin:6px 0 10px}
+  .member-swiper .bgm-btn{font-size:14px;padding:8px 18px}
+  .member-swiper-hint{text-align:center;color:var(--ink-3);font-size:12.5px;letter-spacing:2px;margin-bottom:6px}
+}
