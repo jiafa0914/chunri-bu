@@ -326,4 +326,8 @@ input,textarea,select{font-family:inherit;font-size:14px}
 .album-img-thumb .thumb-bar input{width:118px;font-size:12px;padding:2px 4px;border:1px solid var(--line);border-radius:3px}
 .album-img-thumb .thumb-actions{display:flex;gap:4px;flex-wrap:wrap}
 .album-img-thumb .thumb-actions button{font-size:12px;padding:2px 8px}
-.album-img-thumb .cover-tag{position:absolute;top:4px;left:4px;background:var(--cinnabar);color:var(--paper);font-size:11px;padding:1px 6px;border-radius:3px;z-index:2}
+.album-img-thumb .cover-tag{position:absolute;top:4px;left:4px;background:var(--cinnabar);color:var(--paper);font-size:11px;padding:1px 6px;border-radius:3px;z-index:2}/* 登录状态（CloudBase） */
+.auth-chip{display:flex;align-items:center;gap:4px;margin-left:14px;white-space:nowrap}
+.auth-chip a{font-size:13px;color:var(--ink-2);padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:rgba(255,252,243,.75);text-decoration:none;transition:.2s}
+.auth-chip a:hover{color:var(--cinnabar);border-color:var(--cinnabar)}
+@media (max-width:860px){.auth-chip{margin-left:0;margin-top:6px}}
