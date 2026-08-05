@@ -70,6 +70,12 @@
   };
   (async function(){
     var data = await C.fetchJSON('activities.json');
+    var signupCount = {};
+    try {
+      await CB.ensureAnon();
+      var sr = await CB.coll('signups').limit(1000).get();
+      (sr.data || []).forEach(function(s){ if(s.activityId){ signupCount[s.activityId] = (signupCount[s.activityId]||0)+1; } });
+    } catch(e){ console.warn(e); }
     var list = data.activities || [];
     var box = document.getElementById('act-timeline');
     if(!list.length){ box.innerHTML = '<p class="hint">暂无活动</p>'; return; }
@@ -78,7 +84,7 @@
       div.className = 'tl-item';
       div.innerHTML =
         '<div class="tl-date">' + C.esc(a.date || '') + (a.time ? ' ' + C.esc(a.time) : '') + '</div>' +
-        '<div class="tl-title">' + C.esc(a.title) + ' <span class="badge">' + C.esc(a.type || '') + '</span> <span class="badge badge-dai">' + C.esc(a.status || '') + '</span></div>' +
+        '<div class="tl-title">' + C.esc(a.title) + ' <span class="badge">' + C.esc(a.type || '') + '</span> <span class="badge badge-dai">' + C.esc(a.status || '') + '</span>' + (signupCount[a.id] ? ' <span class="badge badge-gold">已报名 ' + signupCount[a.id] + ' 人</span>' : '') + '</div>' +
         '<div class="tl-meta">' + C.esc(a.location || '') + '</div>' +
         '<div class="tl-desc">' + C.esc(a.desc || '') + '</div>' +
         '<div style="margin-top:10px"><button class="btn btn-cinnabar btn-sm" data-signup="' + a.id + '">我要报名</button></div>';
