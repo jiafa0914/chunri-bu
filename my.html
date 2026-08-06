@@ -250,7 +250,7 @@
     fillForm(mine);
     $('my-role').textContent = role;
     $('profile-card').style.display = '';
-  }
+  })().catch(function(e){ console.warn(e); });
 })();
 </script>
 </body>
