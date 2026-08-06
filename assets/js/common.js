@@ -62,8 +62,8 @@
       hp.innerHTML =
         '<header class="site-header"><div class="header-inner">' +
         '<a class="brand" href="index.html">' +
-        '' +
-        '<span class="brand-name">椿<small>燕云十六声 · 天涯阁</small></span>' +
+        '<span class="brand-seal">椿</span>' +
+        '<span class="brand-name">椿日部<small>燕云十六声 · 天涯阁</small></span>' +
         '</a>' +
 '<nav class="nav">' + links + '</nav>' + '<div class="auth-chip" id="auth-chip"></div>' +
         '</div></header>';
