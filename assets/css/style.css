@@ -238,10 +238,10 @@ input,textarea,select{font-family:inherit;font-size:14px}
 
 /* ---------- Toast ---------- */
 .toast{
-  position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
-  background:var(--ink);color:var(--paper);padding:10px 22px;border-radius:999px;
-  font-size:14px;letter-spacing:1px;opacity:0;pointer-events:none;transition:all .3s;z-index:120;
-  font-family:var(--font-title);
+  position:fixed;left:50%;top:86px;transform:translateX(-50%) translateY(-14px);
+  background:var(--ink);color:var(--paper);padding:12px 26px;border-radius:999px;
+  font-size:15px;letter-spacing:1px;opacity:0;pointer-events:none;transition:all .3s;z-index:120;
+  font-family:var(--font-title);box-shadow:0 8px 24px rgba(38,35,28,.28);
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.ok{background:var(--dai)}
