@@ -32,9 +32,15 @@ jobs:
           TCB_SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
 
       - name: Deploy app to CloudBase (webapps)
+        timeout-minutes: 10
         env:
           TCB_ENV_ID: chunri-bu-d7gvy3e6naad3ba52
         run: |
+          # drop unused legacy BGM files to speed up upload
+          rm -f dist/assets/music/sitebgm-20260806083248-g50o.mp3 \
+                dist/assets/music/sitebgm-20260806083359-nwjv.mp3 \
+                dist/assets/music/sitebgm-20260806091159-9nn5.mp3 \
+                dist/assets/music/jiangshang-qingfengyou.ogg
           tcb app deploy chunri-bu \
             --framework static \
             --install-command "" \
