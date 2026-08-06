@@ -32,7 +32,7 @@ jobs:
           TCB_SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
 
       - name: Deploy app to CloudBase (webapps)
-        timeout-minutes: 10
+        timeout-minutes: 25
         env:
           TCB_ENV_ID: chunri-bu-d7gvy3e6naad3ba52
         run: |
@@ -41,12 +41,25 @@ jobs:
                 dist/assets/music/sitebgm-20260806083359-nwjv.mp3 \
                 dist/assets/music/sitebgm-20260806091159-9nn5.mp3 \
                 dist/assets/music/jiangshang-qingfengyou.ogg
-          tcb app deploy chunri-bu \
-            --framework static \
-            --install-command "" \
-            --build-command "" \
-            --output-dir ./dist \
-            --deploy-path /chunri-bu \
-            --force \
-            --yes \
-            -e "$TCB_ENV_ID"
+          set +e
+          last=1
+          for i in 1 2 3; do
+            echo "=== CloudBase deploy attempt $i ==="
+            tcb app deploy chunri-bu \
+              --framework static \
+              --install-command "" \
+              --build-command "" \
+              --output-dir ./dist \
+              --deploy-path /chunri-bu \
+              --force \
+              --yes \
+              -e "$TCB_ENV_ID"
+            last=$?
+            if [ "$last" -eq 0 ]; then
+              echo "deploy OK"
+              exit 0
+            fi
+            echo "attempt $i failed (exit $last), retrying..."
+            sleep 5
+          done
+          exit "$last"
