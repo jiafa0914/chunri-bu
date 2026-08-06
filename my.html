@@ -18,7 +18,13 @@
     <div class="form-actions"><a class="btn btn-cinnabar btn-sm" href="login.html">去登录 / 注册</a></div>
   </div>
 
-  <div id="profile-card" class="admin-card" style="display:none">
+    <div id="no-profile" class="admin-card" style="display:none">
+    <h3>还没有成员档案</h3>
+    <p class="hint" style="margin:10px 0" id="np-msg"></p>
+    <p class="hint" style="margin:6px 0">你的登录邮箱：<b id="np-email"></b></p>
+    <div class="form-actions"><a class="btn btn-paper btn-sm" href="members.html">看看成员页</a></div>
+  </div>
+<div id="profile-card" class="admin-card" style="display:none">
     <h3>我的档案 <span id="my-role" class="badge" style="vertical-align:middle"></span></h3>
     <p class="hint" style="margin-bottom:14px">这里的内容会展示在「成员」页；背景音乐会在别人点开你的详情时播放。</p>
 
@@ -119,62 +125,90 @@
     }
   });
 
-  (async function(){
+    (async function(){
     C.injectShell();
+    var claim = (new URLSearchParams(location.search)).get('claim') || '';
+    if(claim) sessionStorage.setItem('claim_code', claim);
+    if(!claim) claim = sessionStorage.getItem('claim_code') || '';
+
     var ls = await CB.getLoginState();
-    if(!ls || !ls.user){
+    var email = CB.getEmail() || '';
+    if(!ls || !ls.user || !email){
       $('need-login').style.display = '';
       return;
     }
+
+    function fillForm(m){
+      $('my-name').value = m.name || '';
+      $('my-gameid').value = m.gameId || '';
+      $('my-signature').value = m.signature || '';
+      $('my-bio').value = m.bio || '';
+      if(m.photo){ CB.fileUrl(m.photo).then(function(u){ if(u) $('my-photo-preview').src = u; }); }
+      if(m.bgm){ $('my-bgm-hint').textContent = '已设置背景音乐（可重新上传替换）'; }
+    }
+    function showNoProfile(html){
+      $('profile-card').style.display = 'none';
+      $('need-login').style.display = 'none';
+      $('no-profile').style.display = '';
+      $('np-msg').innerHTML = html;
+      $('np-email').textContent = email;
+    }
+
     var uid = CB.getUid();
-    var email = CB.getEmail() || '';
     var list = [];
     try { list = await CB.listProfiles(); } catch(e){ console.warn(e); }
     var mine = list.filter(function(p){ return p.uid === uid; })[0];
-    if(!mine){
-      role = (list.length === 0) ? '社主' : '成员';
-      var d = {
-        uid: uid,
-        name: email.split('@')[0] || '新成员',
-        email: email,
-        gameId: '',
-        role: role,
-        title: '',
-        signature: '',
-        bio: '',
-        photo: '',
-        bgm: '',
-        active: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+
+    if(!mine && claim){
+      var target = null;
       try {
-        var r = await CB.coll('profiles').add(d);
-        docId = r && (r._id || r.id || (r.data && r.data._id)) || '';
+        var q = await CB.coll('profiles').where({ claimCode: claim }).limit(1).get();
+        target = (q && q.data && q.data[0]) || null;
+      } catch(e){ console.warn(e); }
+      if(!target){
+        for(var i = 0; i < list.length; i++){
+          if(list[i].claimCode && list[i].claimCode === claim){ target = list[i]; break; }
+        }
+      }
+      if(!target){
+        sessionStorage.removeItem('claim_code');
+        showNoProfile('认领链接无效或已被使用。请联系社主重新获取认领链接。');
+        return;
+      }
+      if(target.uid && target.email && target.uid !== uid){
+        sessionStorage.removeItem('claim_code');
+        showNoProfile('这个档案已经被其他账号认领了。如果你确实是自己，请联系社主重新生成链接。');
+        return;
+      }
+      var tid = target._id || target.id;
+      try {
+        await CB.coll('profiles').doc(tid).update({ uid: uid, email: email, claimedAt: new Date().toISOString(), claimCode: '' });
+        C.toast('认领成功，以后可在「我的档案」自助修改', 'ok');
+        sessionStorage.removeItem('claim_code');
+        docId = tid;
+        role = target.role || '成员';
+        fillForm(Object.assign({}, target, { uid: uid, email: email }));
+        $('my-role').textContent = role;
+        $('profile-card').style.display = '';
       } catch(e){
-        // 若权限不允许创建，则退化为仅展示表单
-        docId = '';
-        C.toast('自动建档失败：' + (e.message || e), 'err');
+        showNoProfile('认领失败：' + (e.message || e) + '。请把这段提示告诉社主。');
       }
-      $('my-name').value = d.name;
-    } else {
-      docId = mine._id || mine.id || '';
-      role = mine.role || '成员';
-      $('my-name').value = mine.name || '';
-      $('my-gameid').value = mine.gameId || '';
-      $('my-signature').value = mine.signature || '';
-      $('my-bio').value = mine.bio || '';
-      if(mine.photo){
-        var purl = await CB.fileUrl(mine.photo);
-        if(purl) $('my-photo-preview').src = purl;
-      }
-      if(mine.bgm){
-        $('my-bgm-hint').textContent = '已设置背景音乐（可重新上传替换）';
-      }
+      return;
     }
+
+    if(!mine){
+      sessionStorage.removeItem('claim_code');
+      showNoProfile('你还没有成员档案，暂时不会出现在「成员」页。<br>请联系社主，让他在「管理面板 → 成员」里为你的档案点「认领链接」并把链接发给你；打开链接登录即可绑定并自助修改。');
+      return;
+    }
+
+    sessionStorage.removeItem('claim_code');
+    docId = mine._id || mine.id || '';
+    role = mine.role || '成员';
+    fillForm(mine);
     $('my-role').textContent = role;
     $('profile-card').style.display = '';
-  })().catch(function(e){ console.warn(e); });
+  }
 })();
 </script>
 </body>
