@@ -20,12 +20,13 @@
   .section-title{font-size:20px;letter-spacing:2px}
   .section-sub{font-size:12.5px}
   .brand-name{font-size:18px;letter-spacing:3px}
-  .brand .seal-sm{width:34px;height:34px}
+.brand-seal{width:36px;height:36px;border-radius:7px}
+  .brand-seal span{font-size:22px}
   .header-inner{padding:8px 14px;gap:8px}
   .nav a{font-size:13.5px;padding:6px 8px;letter-spacing:1px}
 
   .hero{min-height:62vh}
-  .hero-title{font-size:clamp(3.4rem,21vw,5.2rem);padding:.08em .14em .04em;border-width:5px;outline-offset:5px;letter-spacing:0;text-indent:0}
+.hero-title{font-size:clamp(3.6rem,22vw,5.4rem);padding:.1em;letter-spacing:0;text-indent:0;border-radius:.14em}
   .hero-sub{font-size:15px;letter-spacing:3px}
   .hero-slogan{font-size:13.5px;letter-spacing:2px}
   .hero-actions{margin-top:22px}
