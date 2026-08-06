@@ -217,7 +217,7 @@
       '<button class="btn btn-paper btn-sm" data-claim="' + idx + '">认领链接</button>' +
       '<button class="btn btn-paper btn-sm" data-e="' + idx + '">编辑</button>' +
       '<button class="btn btn-danger btn-sm" data-d="' + idx + '">删除</button></div></div>' +
-      '<p class="hint" style="margin-top:6px">' + (m.uid ? '<span class="badge badge-gold">已认领</span>' : '<span class="badge badge-dai">未认领</span>') + ' ' + (m.email ? C.esc(m.email) + ' · ' : '') + '签名：' + C.esc(m.signature||'—') + '</p></div>';
+      '<p class="hint" style="margin-top:6px">' + (m.uid ? '<span class="badge badge-gold">已绑定</span>' : '<span class="badge badge-dai">未绑定</span>') + ' ' + (m.email ? C.esc(m.email) + ' · ' : '') + '签名：' + C.esc(m.signature||'—') + '</p></div>';
   }
   async function loadProfiles(){
     profiles = [];
@@ -240,6 +240,8 @@
       return;
     }
     await loadProfiles();
+    var unbound = profiles.filter(function(p){ return !p.uid; }).length;
+    if(hint) hint.textContent = '共 ' + profiles.length + ' 位成员，其中 ' + unbound + ' 位未绑定。未绑定的成员：注册后进「我的档案」填游戏昵称即可自助绑定；也可点该成员卡片上的「认领链接」直接发给对方。';
     if(!profiles.length){ box.innerHTML = '<p class="hint">暂无成员。可点「从旧数据导入」把旧成员迁过来，或「＋ 新增成员」。</p>'; return; }
     box.innerHTML = profiles.map(memberCardHtml).join('');
     box.querySelectorAll('[data-e]').forEach(function(b){ b.addEventListener('click', function(){ editMember(+b.dataset.e); }); });
