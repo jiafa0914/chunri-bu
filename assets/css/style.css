@@ -55,6 +55,7 @@ input,textarea,select{font-family:inherit;font-size:14px}
   backdrop-filter:blur(6px);
   border-bottom:1px solid var(--line);
 }
+  box-shadow:0 2px 14px rgba(38,35,28,.05);
 .header-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 22px;max-width:1200px;margin:0 auto}
 .brand{display:flex;align-items:center;gap:12px}
 .brand-seal{
@@ -207,8 +208,8 @@ input,textarea,select{font-family:inherit;font-size:14px}
 .list-item-meta{font-size:13px;color:var(--ink-3);margin-top:2px}
 .list-item-arrow{color:var(--ink-3);transition:transform .25s;font-size:14px}
 .list-item.open .list-item-arrow{transform:rotate(90deg)}
-.list-item-body{display:none;padding:4px 20px 20px;border-top:1px dashed var(--line)}
-.list-item.open .list-item-body{display:block}
+.list-item-body{max-height:0;overflow:hidden;padding:0 20px;border-top:1px dashed transparent;opacity:0;transition:max-height .4s ease,padding .4s ease,opacity .4s ease,border-color .4s ease}
+.list-item.open .list-item-body{max-height:1600px;padding:4px 20px 20px;border-top:1px dashed var(--line);opacity:1}
 .list-item-body p{margin:10px 0;color:var(--ink-2);font-size:14.5px;white-space:pre-line}
 
 /* ---------- 竖排文字 ---------- */
