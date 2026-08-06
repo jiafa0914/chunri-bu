@@ -42,4 +42,5 @@ jobs:
             --output-dir ./dist \
             --deploy-path /chunri-bu \
             --force \
+            --yes \
             -e "$TCB_ENV_ID"
