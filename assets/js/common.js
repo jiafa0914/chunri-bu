@@ -89,7 +89,24 @@
       document.body.appendChild(b);
       siteBtn = b;
     }
-    /* 登录状态显示（仅当页面引入了云开发 SDK 时） */
+    /* 微信内置浏览器引导 */
+    (function(){
+      var ua = navigator.userAgent || '';
+      if(/MicroMessenger/i.test(ua) && !/wxwork/i.test(ua) && (location.hostname.indexOf('github.io') >= 0)){
+        try { if(sessionStorage.getItem('wx_guide_done')) return; } catch(e){}
+        var g = document.createElement('div');
+        g.id = 'wx-guide';
+        g.innerHTML = '<div class="wx-guide-box">' +
+          '<div class="wx-guide-title">请用浏览器打开</div>' +
+          '<p>微信内置浏览器可能无法正常打开本站。</p>' +
+          '<p>请点击右上角「<b>···</b>」，选择「<b>在浏览器打开</b>」。</p>' +
+          '<button id="wx-guide-close" class="btn btn-cinnabar btn-sm">我知道了</button></div>';
+        g.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(38,35,28,.62);display:flex;align-items:center;justify-content:center;padding:24px';
+        document.body.appendChild(g);
+        var btn = document.getElementById('wx-guide-close');
+        if(btn) btn.addEventListener('click', function(){ g.style.display='none'; try { sessionStorage.setItem('wx_guide_done','1'); } catch(e){} });
+      }
+    })();    /* 登录状态显示（仅当页面引入了云开发 SDK 时） */
     if(window.CB){
       (function(){
         var chip = document.getElementById('auth-chip');
