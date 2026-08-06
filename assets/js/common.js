@@ -95,7 +95,8 @@
         var chip = document.getElementById('auth-chip');
         if(!chip) return;
         CB.getLoginState().then(function(ls){
-          if(ls && ls.user){
+          var chipEmail = CB.getEmail() || '';
+          if(ls && ls.user && chipEmail){
             chip.innerHTML = '<a href="my.html">我的档案</a><a href="#" id="auth-logout">退出</a>';
             var lo = document.getElementById('auth-logout');
             if(lo) lo.addEventListener('click', function(ev){
