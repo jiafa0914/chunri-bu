@@ -31,4 +31,4 @@ jobs:
           TCB_SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
           TCB_ENV_ID: chunri-bu-d7gvy3e6naad3ba52
         run: |
-          tcb hosting deploy dist -e "$TCB_ENV_ID" --force
+          tcb hosting deploy dist -e "$TCB_ENV_ID"
