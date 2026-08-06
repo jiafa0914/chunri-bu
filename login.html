@@ -145,7 +145,8 @@
   (async function(){
     C.injectShell();
     var ls = await CB.getLoginState();
-    if(ls && ls.user){ showDone(); }
+    var email = CB.getEmail() || '';
+    if(ls && ls.user && email){ showDone(); }
   })().catch(function(e){ console.warn(e); });
 })();
 </script>
