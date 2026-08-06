@@ -25,7 +25,7 @@
   .nav a{font-size:13.5px;padding:6px 8px;letter-spacing:1px}
 
   .hero{min-height:62vh}
-  .hero-title{font-size:clamp(2.2rem,12vw,3.2rem);letter-spacing:8px;text-indent:8px}
+  .hero-title{font-size:clamp(3.4rem,21vw,5.2rem);padding:.08em .14em .04em;border-width:5px;outline-offset:5px;letter-spacing:0;text-indent:0}
   .hero-sub{font-size:15px;letter-spacing:3px}
   .hero-slogan{font-size:13.5px;letter-spacing:2px}
   .hero-actions{margin-top:22px}
