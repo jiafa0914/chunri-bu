@@ -737,7 +737,6 @@
     $('mem-cancel').addEventListener('click', newMember);
     $('mem-photo-file').addEventListener('change', uploadMemberPhoto);
     $('mem-bgm-file').addEventListener('change', uploadMemberBgm);
-    $('mem-editkey-reg').addEventListener('click', genEditKey);
     $('act-add').addEventListener('click', resetActForm);
     $('act-save').addEventListener('click', saveAct);
     $('act-cancel').addEventListener('click', resetActForm);
