@@ -214,9 +214,10 @@
       '<div><b>' + C.esc(m.name) + '</b> <span class="badge" style="margin-left:6px">' + C.esc(m.role||'') + '</span>' +
       (m.active === false ? ' <span class="badge badge-dai">暂离</span>' : '') + '</div></div>' +
       '<div class="row-actions">' +
+      '<button class="btn btn-paper btn-sm" data-claim="' + idx + '">认领链接</button>' +
       '<button class="btn btn-paper btn-sm" data-e="' + idx + '">编辑</button>' +
       '<button class="btn btn-danger btn-sm" data-d="' + idx + '">删除</button></div></div>' +
-      '<p class="hint" style="margin-top:6px">' + (m.email ? C.esc(m.email) + ' · ' : '') + '签名：' + C.esc(m.signature||'—') + '</p></div>';
+      '<p class="hint" style="margin-top:6px">' + (m.uid ? '<span class="badge badge-gold">已认领</span>' : '<span class="badge badge-dai">未认领</span>') + ' ' + (m.email ? C.esc(m.email) + ' · ' : '') + '签名：' + C.esc(m.signature||'—') + '</p></div>';
   }
   async function loadProfiles(){
     profiles = [];
@@ -243,6 +244,7 @@
     box.innerHTML = profiles.map(memberCardHtml).join('');
     box.querySelectorAll('[data-e]').forEach(function(b){ b.addEventListener('click', function(){ editMember(+b.dataset.e); }); });
     box.querySelectorAll('[data-d]').forEach(function(b){ b.addEventListener('click', function(){ delMember(+b.dataset.d); }); });
+    box.querySelectorAll('[data-claim]').forEach(function(b){ b.addEventListener('click', function(){ copyClaimLink(+b.dataset.claim); }); });
   }
   function newMember(){ memEdit = -1; $('mem-name').value=''; $('mem-role').value=''; $('mem-title').value=''; $('mem-photo-url').value=''; $('mem-signature').value=''; $('mem-bgm-url').value=''; $('mem-bio').value=''; $('mem-joindate').value=''; $('mem-active').checked=true; $('mem-photo-preview').src='assets/svg/plum.svg'; $('mem-cancel').classList.add('hidden'); $('mem-form-title').textContent='新增成员'; }
   function editMember(i){
@@ -270,6 +272,11 @@
       active: $('mem-active').checked,
       updatedAt: new Date().toISOString()
     };
+    if(memEdit >= 0){
+      if(!profiles[memEdit].claimCode) m.claimCode = genClaimCode();
+    } else {
+      m.claimCode = genClaimCode();
+    }
     try {
       if(memEdit >= 0){
         var id = profiles[memEdit]._id || profiles[memEdit].id;
@@ -290,6 +297,35 @@
     } catch(e){ C.toast('删除失败：' + (e.message || e), 'err'); }
   }
   function genEditKey(){ C.toast('已升级为账号机制：成员登录后自己改档案', 'ok'); }
+  function genClaimCode(){
+    var s = 'abcdefghjkmnpqrstuvwxyz23456789';
+    var out = '';
+    for(var i = 0; i < 12; i++){ out += s.charAt(Math.floor(Math.random() * s.length)); }
+    return out;
+  }
+  async function copyClaimLink(i){
+    var m = profiles[i];
+    if(!CB.isLoggedIn()){ C.toast('请先在云账号登录', 'err'); return; }
+    C.toast('正在生成认领链接…');
+    try {
+      var upd = {};
+      if(!m.claimCode) upd.claimCode = genClaimCode();
+      if(m.uid && !m.email){ upd.uid = ''; upd.claimedAt = ''; }
+      if(Object.keys(upd).length){
+        await CB.coll('profiles').doc(m._id || m.id).update(upd);
+        if(upd.claimCode) m.claimCode = upd.claimCode;
+        if(upd.uid !== undefined) m.uid = '';
+      }
+      var base = location.href.split('admin.html')[0] || (location.origin + '/');
+      var link = base + 'my.html?claim=' + m.claimCode;
+      try {
+        await navigator.clipboard.writeText(link);
+        C.toast('认领链接已复制，发给「' + (m.name || '该成员') + '」即可', 'ok');
+      } catch(e2){
+        window.prompt('认领链接（请复制）：', link);
+      }
+    } catch(e){ C.toast('生成认领链接失败：' + (e.message || e), 'err'); }
+  }
   async function uploadMemberPhoto(){
     var f = $('mem-photo-file').files[0]; if(!f) return;
     C.toast('正在上传照片…');
