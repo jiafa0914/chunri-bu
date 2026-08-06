@@ -25,10 +25,14 @@ jobs:
           cp -r assets dist/
           ls -la dist
 
-      - name: Deploy to CloudBase static hosting
+      - name: Login CloudBase CLI
+        run: tcb login --apiKeyId "$TCB_SECRET_ID" --apiKey "$TCB_SECRET_KEY"
         env:
           TCB_SECRET_ID: ${{ secrets.TCB_SECRET_ID }}
           TCB_SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
+
+      - name: Deploy to CloudBase static hosting
+        env:
           TCB_ENV_ID: chunri-bu-d7gvy3e6naad3ba52
         run: |
-          tcb hosting deploy dist -e "$TCB_ENV_ID"
+          tcb hosting deploy dist / -e "$TCB_ENV_ID"
