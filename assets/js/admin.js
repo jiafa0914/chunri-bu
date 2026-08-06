@@ -316,8 +316,15 @@
         if(upd.claimCode) m.claimCode = upd.claimCode;
         if(upd.uid !== undefined) m.uid = '';
       }
-      var base = location.href.split('admin.html')[0] || (location.origin + '/');
-      var link = base + 'my.html?claim=' + m.claimCode;
+      var host = location.hostname || '';
+      var base;
+      if(host === 'localhost' || host === '127.0.0.1'){
+        base = 'https://' + DEF_OWNER + '.github.io/' + DEF_REPO + '/';
+      } else {
+        base = location.href.split('admin.html')[0] || (location.origin + '/');
+      }
+      if(!m.claimCode){ C.toast('认领码生成失败，请重试', 'err'); return; }
+      var link = base + 'my.html?claim=' + encodeURIComponent(m.claimCode);
       try {
         await navigator.clipboard.writeText(link);
         C.toast('认领链接已复制，发给「' + (m.name || '该成员') + '」即可', 'ok');
