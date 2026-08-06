@@ -53,7 +53,7 @@
   /* 列表（活动/攻略/日报） */
   .list-item-head{padding:12px 14px}
   .list-item-title{font-size:16px}
-  .list-item-body{padding:4px 14px 14px}
+  .list-item.open .list-item-body{padding:4px 14px 14px}
   .list-item-body p{font-size:14px}
 
   /* 表单 */
