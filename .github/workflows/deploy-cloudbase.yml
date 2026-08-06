@@ -1,0 +1,34 @@
+name: Deploy to CloudBase
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install CloudBase CLI
+        run: npm i -g @cloudbase/cli
+
+      - name: Assemble site files
+        run: |
+          mkdir -p dist
+          cp index.html about.html members.html activities.html guides.html daily.html gallery.html recruit.html my.html login.html member-edit.html admin.html qr.html 404.html config.json members.json activities.json guides.json daily.json albums.json .nojekyll dist/ || true
+          cp -r assets dist/
+          ls -la dist
+
+      - name: Deploy to CloudBase static hosting
+        env:
+          TCB_SECRET_ID: ${{ secrets.TCB_SECRET_ID }}
+          TCB_SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
+          TCB_ENV_ID: chunri-bu-d7gvy3e6naad3ba52
+        run: |
+          tcb hosting deploy dist -e "$TCB_ENV_ID" --force
