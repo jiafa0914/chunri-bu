@@ -121,16 +121,24 @@
   var siteBgm = '';
   var currentMode = 'none';   // none | site | member
   var siteWasPlaying = false;
+  var siteResumeAt = 0;
   var siteBtn = null;
 
   function norm(u){ try { return new URL(u, location.href).href; } catch(e){ return u; } }
   function refreshSiteBtn(){
     if(!siteBtn) return;
     if(currentMode === 'site' && !audio.paused){
-      siteBtn.classList.add('playing'); siteBtn.textContent = '⏸'; siteBtn.title = '暂停官网音乐';
+      siteBtn.classList.add('playing'); siteBtn.classList.remove('member');
+      siteBtn.innerHTML = '<span class="eq"><i></i><i></i><i></i></span>';
+      siteBtn.title = '暂停官网音乐';
+    } else if(currentMode === 'member' && !audio.paused){
+      siteBtn.classList.remove('playing'); siteBtn.classList.add('member');
+      siteBtn.textContent = '♪';
+      siteBtn.title = '正在播放成员音乐';
     } else {
-      siteBtn.classList.remove('playing'); siteBtn.textContent = '♪';
-      siteBtn.title = (currentMode === 'member' && !audio.paused) ? '正在播放成员音乐' : '播放官网音乐';
+      siteBtn.classList.remove('playing','member');
+      siteBtn.textContent = '♪';
+      siteBtn.title = '播放官网音乐';
     }
   }
   audio.addEventListener('ended', function(){ if(currentMode === 'member') currentMode = 'none'; refreshSiteBtn(); });
@@ -157,23 +165,30 @@
     audio.play().then(refreshSiteBtn).catch(function(){ C.toast('无法播放音乐，请检查链接', 'err'); });
     refreshSiteBtn();
   };
-  /* 打开成员详情：记住官网音乐是否在播，然后播放该成员音乐 */
+  /* 打开成员详情：记住官网音乐是否在播及位置，播放成员音乐；成员没设音乐则不打断官网音乐 */
   C.openMember = function(m){
-    siteWasPlaying = (currentMode === 'site' && !audio.paused);
-    if(m && m.bgm){ C.playMemberBgm(m.bgm); }
-    else { audio.pause(); currentMode = 'none'; refreshSiteBtn(); }
+    if(m && m.bgm){
+      siteWasPlaying = (currentMode === 'site' && !audio.paused);
+      if(siteWasPlaying){ siteResumeAt = audio.currentTime || 0; audio.pause(); }
+      currentMode = 'member';
+      audio.src = m.bgm;
+      audio.play().then(refreshSiteBtn).catch(function(){ C.toast('无法播放成员音乐', 'err'); refreshSiteBtn(); });
+      refreshSiteBtn();
+    } else {
+      if(currentMode === 'member'){ audio.pause(); currentMode = 'none'; refreshSiteBtn(); }
+    }
   };
-  /* 关闭成员详情：恢复官网音乐 */
+  /* 关闭成员详情：官网音乐从上次位置继续播 */
   C.closeMember = function(){
     if(siteWasPlaying){
+      siteWasPlaying = false;
       currentMode = 'site';
       audio.src = siteBgm;
-      audio.play().catch(function(){});
-      refreshSiteBtn();
-    } else if(currentMode === 'member'){
-      audio.pause(); currentMode = 'none'; refreshSiteBtn();
+      try { audio.currentTime = siteResumeAt || 0; } catch(e){}
+      audio.play().then(refreshSiteBtn).catch(function(){ currentMode = 'none'; refreshSiteBtn(); });
+      return;
     }
-    siteWasPlaying = false;
+    if(currentMode === 'member'){ audio.pause(); currentMode = 'none'; refreshSiteBtn(); }
   };
 
   /* 首次点击页面任意处：自动开始官网音乐（除非点在音乐按钮上） */
@@ -190,26 +205,23 @@
     }
   });
 
-  /* 成员卡片上的「♪ 听曲」按钮 */
+  /* 成员详情里的「播放/暂停」按钮 */
   C.setupBgm = function(){
     document.querySelectorAll('.bgm-btn').forEach(function(btn){
-      btn.addEventListener('click', function(ev){
+      var url = btn.dataset.bgm;
+      var playing = (currentMode === 'member' && !audio.paused && norm(audio.src) === norm(url));
+      btn.classList.toggle('playing', playing);
+      btn.innerHTML = playing ? '⏸ 暂停' : '♪ 播放';
+      btn.onclick = function(ev){
         if(ev) ev.stopPropagation();
-        var url = btn.dataset.bgm;
         if(currentMode === 'member' && !audio.paused && norm(audio.src) === norm(url)){
-          audio.pause(); currentMode = 'none'; resetBtns(); refreshSiteBtn(); return;
+          audio.pause(); currentMode = 'none'; refreshSiteBtn(); C.setupBgm(); return;
         }
         C.playMemberBgm(url);
-        resetBtns();
-        btn.classList.add('playing'); btn.textContent = '⏸ 停曲';
-      });
+        refreshSiteBtn(); C.setupBgm();
+      };
     });
   };
-  function resetBtns(){
-    document.querySelectorAll('.bgm-btn').forEach(function(b){
-      b.classList.remove('playing'); b.textContent = '♪ 听曲';
-    });
-  }
 
   /* ---------- 图片压缩 ---------- */
   C.compressImage = function(file, maxW, q){
