@@ -503,6 +503,19 @@
       }
     } catch(e){ console.warn(e); }
   }
+  function errMsg(e){
+    if(!e) return '未知错误';
+    if(typeof e === 'string') return e;
+    var s = '';
+    try { s = JSON.stringify(e); } catch(_){}
+    var raw = (e && (e.message || e.errMsg || e.msg || e.reason || e.code || (e.error && (e.error.message || e.error.code)))) || s || '';
+    raw = String(raw);
+    if(/password|account|user|login|auth|密码|账号/i.test(raw)) return '账号或密码错误，请检查后重试';
+    if(/network|timeout|fetch|connect|网络/i.test(raw)) return '网络异常，请稍后重试';
+    if(/verif/i.test(raw)) return '邮箱验证未完成，请先完成注册';
+    if(raw && raw !== 'undefined' && raw !== 'null' && raw.length < 140) return raw;
+    return '登录失败，请检查账号密码后重试';
+  }
   async function accLogin(){
     var email = $('acc-email').value.trim(), pwd = $('acc-pwd').value;
     if(!email || !pwd){ C.toast('请填写邮箱和密码', 'err'); return; }
@@ -512,7 +525,7 @@
       C.toast('登录成功', 'ok');
       await renderAccount();
       renderMembers(); renderAlbums();
-    } catch(e){ C.toast('登录失败：' + (e.message || e), 'err'); }
+    } catch(e){ console.error('登录失败', e); C.toast('登录失败：' + errMsg(e), 'err'); }
   }
   async function accLogout(){
     await CB.signOut();
