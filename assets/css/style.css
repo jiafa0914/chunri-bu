@@ -329,6 +329,18 @@ input,textarea,select{font-family:inherit;font-size:14px}
 .album-cover img{width:100%;height:100%;object-fit:cover}
 .album-count{font-size:12.5px;color:var(--ink-3);margin-top:4px}
 
+/* 相册折叠展开模式 */
+.album-item .album-head{display:flex;align-items:center;gap:14px;min-width:0}
+.album-item .album-cover-sm{width:92px;height:69px;flex:none;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:var(--paper-2)}
+.album-item .album-cover-sm img{width:100%;height:100%;object-fit:cover}
+.album-item .album-cover-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--font-title);font-size:30px;color:var(--ink-3)}
+.album-item .album-head-info{flex:1;min-width:0}
+.album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:14px}
+.album-photo{position:relative;cursor:zoom-in;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:var(--paper-2)}
+.album-photo img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;transition:transform .25s}
+.album-photo:hover img{transform:scale(1.04)}
+.album-photo figcaption{font-size:12px;color:var(--ink-3);padding:6px 8px;background:var(--paper);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
 /* 灯箱 */
 .lightbox{position:fixed;inset:0;z-index:110;background:rgba(20,18,14,.94);display:none;align-items:center;justify-content:center;flex-direction:column;padding:20px}
 .lightbox.show{display:flex}
