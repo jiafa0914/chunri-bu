@@ -2,11 +2,11 @@
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#fdf4f6"/>
-      <stop offset="1" stop-color="#f6e0e6"/>
+      <stop offset="1" stop-color="#f5dfe5"/>
     </linearGradient>
-    <filter id="blurA"><feGaussianBlur stdDeviation="26"/></filter>
-    <filter id="blurB"><feGaussianBlur stdDeviation="15"/></filter>
-    <filter id="blurC"><feGaussianBlur stdDeviation="8"/></filter>
+    <filter id="blurBig"><feGaussianBlur stdDeviation="34"/></filter>
+    <filter id="blurMid"><feGaussianBlur stdDeviation="20"/></filter>
+    <filter id="blurSm"><feGaussianBlur stdDeviation="9"/></filter>
     <g id="petal"><path d="M0 0 C -9 -12 -11 -22 -4 -30 C -1.5 -33.5 1.5 -33.5 4 -30 C 11 -22 9 -12 0 0 Z" fill="#f8cfd8" opacity="0.95"/></g>
     <g id="blossom">
       <use href="#petal"/>
@@ -21,9 +21,10 @@
     </g>
     <g id="petal-s"><path d="M0 0 C -6 -8 -7 -14 -2.6 -19 C -1 -21 1 -21 2.6 -19 C 7 -14 6 -8 0 0 Z" fill="#f3b8c6"/></g>
     <style>
-      @keyframes inkSpread { 0% {opacity:0; transform:scale(.35)} 40% {opacity:.8} 100% {opacity:.72; transform:scale(1.18)} }
-      .inkA{ animation: inkSpread 10s ease-out both; transform-box:fill-box; transform-origin:center; }
-      .inkB{ animation: inkSpread 14s ease-out both; transform-box:fill-box; transform-origin:center; }
+      @keyframes inkSpread { 0% {opacity:0; transform:scale(.3)} 40% {opacity:.78} 100% {opacity:.72; transform:scale(1.14)} }
+      @keyframes inkPulse { 0%,100% {transform:scale(1)} 50% {transform:scale(1.06)} }
+      .inkA{ animation: inkSpread 9s ease-out both, inkPulse 6s ease-in-out 9s infinite; transform-box:fill-box; transform-origin:center; }
+      .inkB{ animation: inkSpread 13s ease-out both, inkPulse 8s ease-in-out 13s infinite; transform-box:fill-box; transform-origin:center; }
       @keyframes bloom { 0% {opacity:0; transform:scale(.15) rotate(-10deg)} 55% {opacity:1; transform:scale(1.08) rotate(3deg)} 100% {opacity:1; transform:scale(1) rotate(0deg)} }
       .bloom{ animation: bloom 3.6s ease-out both; transform-box:fill-box; transform-origin:center; }
       @keyframes fadeIn { from{opacity:0} to{opacity:1} }
@@ -33,23 +34,39 @@
     </style>
   </defs>
   <rect width="1600" height="900" fill="url(#sky)"/>
-  <ellipse cx="1250" cy="320" rx="380" ry="240" fill="#f5ccd6" opacity="0.5" filter="url(#blurB)"/>
-  <ellipse cx="330" cy="660" rx="400" ry="230" fill="#f2c2cd" opacity="0.42" filter="url(#blurB)"/>
-  <ellipse cx="820" cy="200" rx="300" ry="180" fill="#f8dbe2" opacity="0.5" filter="url(#blurB)"/>
-  <g filter="url(#blurA)" class="fade">
-    <path d="M0 620 Q 260 500 560 560 T 1180 540 T 1600 610 L 1600 900 L 0 900 Z" fill="#8a6a73" opacity="0.4"/>
+  <ellipse cx="1250" cy="330" rx="360" ry="230" fill="#f5ccd6" opacity="0.5" filter="url(#blurMid)"/>
+  <ellipse cx="300" cy="180" rx="300" ry="170" fill="#f8dbe2" opacity="0.5" filter="url(#blurMid)"/>
+  <ellipse cx="820" cy="760" rx="340" ry="180" fill="#f2c4cf" opacity="0.4" filter="url(#blurMid)"/>
+  <g class="inkA" filter="url(#blurBig)">
+    <path d="M330 520 C 420 420 560 430 620 520 C 670 610 610 700 500 730 C 380 760 270 690 270 600 C 270 560 295 535 330 520 Z" fill="#4a3a42" opacity="0"/>
   </g>
-  <g filter="url(#blurA)" class="fade">
-    <path d="M0 720 Q 300 610 620 670 T 1220 650 T 1600 700 L 1600 900 L 0 900 Z" fill="#5d4750" opacity="0.42"/>
+  <g class="inkB" filter="url(#blurMid)">
+    <path d="M1120 400 C 1170 350 1250 360 1280 420 C 1300 480 1250 530 1180 535 C 1110 540 1070 480 1090 440 C 1095 425 1105 412 1120 400 Z" fill="#5d4750" opacity="0"/>
   </g>
-  <ellipse class="inkA" cx="300" cy="300" rx="120" ry="90" fill="#a98a92" opacity="0" filter="url(#blurB)"/>
-  <ellipse class="inkB" cx="1350" cy="520" rx="150" ry="100" fill="#b18f98" opacity="0" filter="url(#blurB)" style="animation-delay:1.2s"/>
-  <ellipse class="inkA" cx="760" cy="470" rx="110" ry="80" fill="#9a7b84" opacity="0" filter="url(#blurB)" style="animation-delay:2s"/>
-  <ellipse class="inkB" cx="520" cy="800" rx="160" ry="90" fill="#7e5f68" opacity="0" filter="url(#blurB)" style="animation-delay:2.8s"/>
-  <ellipse class="inkA" cx="1150" cy="820" rx="140" ry="85" fill="#8f6f78" opacity="0" filter="url(#blurB)" style="animation-delay:3.5s"/>
-  <ellipse class="inkB" cx="180" cy="560" rx="110" ry="75" fill="#a2858d" opacity="0" filter="url(#blurB)" style="animation-delay:4.2s"/>
-  <ellipse class="inkA" cx="980" cy="160" rx="100" ry="70" fill="#b99ba3" opacity="0" filter="url(#blurC)" style="animation-delay:4.8s"/>
-  <ellipse class="inkB" cx="1460" cy="180" rx="90" ry="65" fill="#b08f97" opacity="0" filter="url(#blurC)" style="animation-delay:5.4s"/>
+  <g class="inkA" filter="url(#blurMid)" style="animation-delay:1.5s">
+    <path d="M700 690 C 745 650 820 660 845 710 C 865 760 810 810 750 812 C 690 815 660 760 670 725 C 672 712 682 698 700 690 Z" fill="#4a3a42" opacity="0"/>
+  </g>
+  <g class="inkB" filter="url(#blurSm)" style="animation-delay:2.5s">
+    <ellipse cx="1330" cy="560" rx="70" ry="52" fill="#6b5159" opacity="0"/>
+  </g>
+  <g class="inkA" filter="url(#blurSm)" style="animation-delay:3.3s">
+    <ellipse cx="300" cy="300" rx="55" ry="42" fill="#755a63" opacity="0"/>
+  </g>
+  <g class="inkB" filter="url(#blurSm)" style="animation-delay:4s">
+    <ellipse cx="1010" cy="210" rx="48" ry="36" fill="#7c6169" opacity="0"/>
+  </g>
+  <g class="inkA" filter="url(#blurSm)" style="animation-delay:4.7s">
+    <ellipse cx="1450" cy="800" rx="60" ry="44" fill="#6b5159" opacity="0"/>
+  </g>
+  <g class="inkB" filter="url(#blurSm)" style="animation-delay:5.4s">
+    <ellipse cx="520" cy="860" rx="50" ry="36" fill="#7c6169" opacity="0"/>
+  </g>
+  <g class="inkA" filter="url(#blurSm)" style="animation-delay:6s">
+    <ellipse cx="180" cy="740" rx="42" ry="32" fill="#755a63" opacity="0"/>
+  </g>
+  <g class="inkB" filter="url(#blurMid)" style="animation-delay:6.6s">
+    <path d="M900 830 C 940 800 1000 810 1015 850 C 1025 890 975 915 930 912 C 890 910 875 870 885 850 Z" fill="#5d4750" opacity="0"/>
+  </g>
   <g class="fade" opacity="0">
     <path d="M1660 -40 C 1480 30 1350 130 1230 250 C 1160 322 1100 402 1050 470" fill="none" stroke="#46343c" stroke-width="15" stroke-linecap="round"/>
     <path d="M1230 250 C 1180 240 1120 250 1060 275" fill="none" stroke="#46343c" stroke-width="9" stroke-linecap="round"/>
