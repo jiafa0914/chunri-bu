@@ -62,7 +62,7 @@
       hp.innerHTML =
         '<header class="site-header"><div class="header-inner">' +
         '<a class="brand" href="index.html">' +
-        '<img class="seal-sm" src="assets/svg/seal.svg" alt="椿日部印章">' +
+        '' +
         '<span class="brand-name">椿<small>燕云十六声 · 天涯阁</small></span>' +
         '</a>' +
 '<nav class="nav">' + links + '</nav>' + '<div class="auth-chip" id="auth-chip"></div>' +
