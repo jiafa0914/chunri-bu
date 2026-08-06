@@ -107,7 +107,9 @@
     var cfg = await C.fetchJSON('config.json');
     var st = cfg.site;
     document.title = st.name + ' · ' + st.subtitle;
-    document.getElementById('hero-bg').style.backgroundImage = 'url("' + C.esc(st.background) + '")';
+    var heroBg = document.getElementById('hero-bg');
+    heroBg.style.backgroundImage = 'url(" + C.esc(st.background) + ")';
+    if(st.background && st.background.indexOf('sakura-ink-live') >= 0) heroBg.classList.add('bg-live');
     document.getElementById('hero-title').textContent = '椿';
     document.getElementById('hero-sub').textContent = st.subtitle;
     document.getElementById('hero-slogan').textContent = st.slogan || '';
