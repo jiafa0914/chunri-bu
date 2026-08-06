@@ -201,12 +201,9 @@
           <div class="field">
             <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="mem-active" checked> 显示在成员列表中</label>
           </div>
-          <div class="field">
-            <label>自助编辑密钥（发给该成员，用于设置自己的照片/签名/BGM）</label>
-            <div class="mini-upload">
-              <input id="mem-editkey" placeholder="留空则不开通自助编辑" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(255,252,243,.8)">
-              <button class="btn btn-paper btn-sm" id="mem-editkey-reg">随机生成</button>
-            </div>
+                    <div class="field">
+            <label>成员自助修改</label>
+            <p class="hint" style="margin:4px 0">保存成员后，成员卡片上会出现「认领链接」按钮。点它复制链接发给该成员；成员登录后打开链接即可绑定并自助修改照片/签名/BGM。</p>
           </div>
           <div class="form-actions">
             <button class="btn btn-cinnabar btn-sm" id="mem-save">保存成员</button>
