@@ -34,6 +34,7 @@
   CB.sendEmailCode = function(email){ return CB.getAuth().getVerification({ email: email }); };
   CB.verifyCode = function(verificationId, code){ return CB.getAuth().verify({ verification_id: verificationId, verification_code: code }); };
   CB.signUp = function(opts){ return CB.getAuth().signUp(opts); };
+  CB.resetPassword = function(email, newPassword, verificationToken){ return CB.getAuth().resetPassword({ email: email, new_password: newPassword, verification_token: verificationToken }); };
   CB.signOut = async function(){ try { await CB.getAuth().signOut(); } catch(e){} };
 
   /* ---------- 云存储 ---------- */
