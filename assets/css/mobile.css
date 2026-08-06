@@ -48,6 +48,8 @@
   .album-card{padding:10px}
   .album-cover{border-radius:10px;margin-bottom:8px}
   .album-count{font-size:11.5px}
+  .album-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .album-item .album-cover-sm{width:70px;height:52px}
 
   /* 列表（活动/攻略/日报） */
   .list-item-head{padding:12px 14px}
