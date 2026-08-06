@@ -29,6 +29,7 @@
         <button class="btn btn-cinnabar btn-sm" id="lg-submit">登 录</button>
       </div>
       <p class="hint" style="margin-top:10px">没有账号？点上方「注册」，用邮箱+验证码 30 秒注册。</p>
+      <p class="hint" style="margin-top:6px"><a href="#" id="fg-link" style="color:var(--cinnabar)">忘记密码？</a></p>
     </div>
 
     <!-- 注册 -->
@@ -53,6 +54,27 @@
         <button class="btn btn-cinnabar btn-sm" id="rg-submit">注 册</button>
       </div>
       <p class="hint" style="margin-top:10px">注册即代表你是椿日部成员；第一位注册的成员会被设为「社主」管理员。</p>
+    </div>
+
+    <!-- 忘记密码 -->
+    <div id="form-forgot" style="display:none">
+      <div class="field"><label>邮箱（注册时用的）</label><input id="fg-email" type="email" placeholder="you@example.com"></div>
+      <div class="field">
+        <label>验证码</label>
+        <div style="display:flex;gap:8px">
+          <input id="fg-code" placeholder="6 位验证码" style="flex:1">
+          <button class="btn btn-paper btn-sm" id="fg-send" style="white-space:nowrap">发送验证码</button>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <div class="field"><label>新密码</label><input id="fg-pwd" type="password" placeholder="8~32 位，含字母和数字"></div>
+        <div class="field"><label>确认新密码</label><input id="fg-pwd2" type="password" placeholder="再输一次"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-cinnabar btn-sm" id="fg-submit">重置密码</button>
+        <button class="btn btn-paper btn-sm" id="fg-back">返回登录</button>
+      </div>
+      <p class="hint" style="margin-top:10px">验证码会发到你的邮箱（含垃圾箱）。</p>
     </div>
 
     <div id="auth-done" style="display:none">
@@ -155,6 +177,63 @@
     $('done-email').textContent = (CB.getEmail() || '已登录') + (boundName ? '（已绑定档案：' + boundName + '）' : '');
     $('auth-done').style.display='';
   }
+
+  /* ---------- 忘记密码 ---------- */
+  var fgVerificationId = null;
+  function fgMsg(e){
+    if(!e) return '未知错误';
+    if(typeof e === 'string') return e;
+    if(e.message) return e.message;
+    if(e.error_description) return e.error_description;
+    if(e.error) return String(e.error);
+    try { var s = JSON.stringify(e); if(s && s.length < 140) return s; } catch(_){}
+    return '操作失败，请重试';
+  }
+  function showForgot(){
+    $('form-login').style.display='none';
+    $('form-reg').style.display='none';
+    $('form-forgot').style.display='';
+    $('auth-tabs').style.display='none';
+    $('login-title').textContent='重置密码';
+  }
+  function showLoginForm(){
+    $('form-login').style.display='';
+    $('form-reg').style.display='none';
+    $('form-forgot').style.display='none';
+    $('auth-tabs').style.display='flex';
+    $('login-title').textContent='登录椿日部';
+  }
+  $('fg-link').addEventListener('click', function(e){ e.preventDefault(); showForgot(); });
+  $('fg-back').addEventListener('click', function(){ showLoginForm(); });
+  $('fg-send').addEventListener('click', async function(){
+    var email = $('fg-email').value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ C.toast('请先填写正确的邮箱', 'err'); return; }
+    C.toast('正在发送验证码…');
+    try {
+      var v = await CB.sendEmailCode(email);
+      fgVerificationId = v && v.verification_id;
+      C.toast('验证码已发送，请查收邮箱（含垃圾箱）', 'ok');
+    } catch(e){ C.toast('发送失败：' + fgMsg(e), 'err'); }
+  });
+  $('fg-submit').addEventListener('click', async function(){
+    var email = $('fg-email').value.trim();
+    var code = $('fg-code').value.trim();
+    var pwd = $('fg-pwd').value;
+    if(!email || !code || !pwd){ C.toast('请填写完整信息', 'err'); return; }
+    if(pwd.length < 8 || pwd.length > 32){ C.toast('密码需 8~32 位', 'err'); return; }
+    if(!/[a-zA-Z]/.test(pwd) || !/[0-9]/.test(pwd)){ C.toast('密码需同时包含字母和数字', 'err'); return; }
+    if(pwd !== $('fg-pwd2').value){ C.toast('两次密码不一致', 'err'); return; }
+    C.toast('正在重置…');
+    try {
+      if(!fgVerificationId) throw new Error('请先获取验证码');
+      var vr = await CB.verifyCode(fgVerificationId, code);
+      var token = vr && vr.verification_token;
+      if(!token) throw new Error('验证码校验失败，请重试');
+      await CB.resetPassword(email, pwd, token);
+      C.toast('密码已重置，请用新密码登录', 'ok');
+      showLoginForm();
+    } catch(e){ C.toast('重置失败：' + fgMsg(e), 'err'); }
+  });
 
   (async function(){
     C.injectShell();
