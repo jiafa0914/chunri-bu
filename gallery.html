@@ -15,21 +15,18 @@
   <div class="container">
     <div class="section-head">
       <h2 class="section-title"><span class="dot"></span>江湖相册<span class="dot"></span></h2>
-      <p class="section-sub">记下椿日部的每一次相聚 · 点开相册可全屏浏览</p>
+      <p class="section-sub">记下椿日部的每一次相聚 · 点击相册标题即可展开照片</p>
     </div>
-    <div class="grid grid-3" id="album-list"></div>
+    <div id="album-list"></div>
   </div>
 </section>
 
 <div id="site-footer-placeholder"></div>
 
-<div class="lightbox" id="lightbox">
-  <button class="lb-close" onclick="LB.close()">✕</button>
-  <button class="lb-nav lb-prev" onclick="LB.prev()">‹</button>
-  <img id="lb-img" alt="">
+<div class="lightbox" id="lightbox" onclick="LB.close()">
+  <button class="lb-close" onclick="event.stopPropagation();LB.close()">×</button>
+  <img id="lb-img" alt="" onclick="event.stopPropagation()">
   <div class="lb-caption" id="lb-caption"></div>
-  <div class="lb-index" id="lb-index"></div>
-  <button class="lb-nav lb-next" onclick="LB.next()">›</button>
 </div>
 
 <script src="assets/js/vendor/cloudbase.full.js"></script>
@@ -39,42 +36,38 @@
 <script>
 (function(){
   var LB = window.LB = {
-    albums: [], curAlbum: null, curIdx: 0,
-    open: function(album, idx){
-      LB.curAlbum = album; LB.curIdx = idx;
+    open: function(src, cap){
+      document.getElementById('lb-img').src = src;
+      document.getElementById('lb-caption').textContent = cap || '';
       document.getElementById('lightbox').classList.add('show');
-      LB.render();
     },
-    render: function(){
-      var imgs = LB.curAlbum.images || [];
-      var item = imgs[LB.curIdx];
-      if(!item) return;
-      document.getElementById('lb-img').src = item.src;
-      document.getElementById('lb-caption').textContent = (LB.curAlbum.title || '') + (item.caption ? ' · ' + item.caption : '');
-      document.getElementById('lb-index').textContent = (LB.curIdx + 1) + ' / ' + imgs.length;
-    },
-    close: function(){ document.getElementById('lightbox').classList.remove('show'); },
-    prev: function(){ var n = (LB.curAlbum.images||[]).length; if(n) LB.curIdx = (LB.curIdx - 1 + n) % n; LB.render(); },
-    next: function(){ var n = (LB.curAlbum.images||[]).length; if(n) LB.curIdx = (LB.curIdx + 1) % n; LB.render(); }
+    close: function(){ document.getElementById('lightbox').classList.remove('show'); }
   };
-  document.addEventListener('keydown', function(e){
-    if(!document.getElementById('lightbox').classList.contains('show')) return;
-    if(e.key === 'Escape') LB.close();
-    if(e.key === 'ArrowLeft') LB.prev();
-    if(e.key === 'ArrowRight') LB.next();
-  });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') LB.close(); });
 
-  function albumCard(a){
-    var cover = (a.cover && a.images && a.images.length) ? a.cover : ((a.images && a.images[0]) ? a.images[0].src : '');
+  function albumCard(a, i){
+    var imgs = a.images || [];
+    var cover = a.cover || (imgs[0] ? imgs[0].src : '');
     var coverHtml = cover
-      ? '<img src="' + C.esc(cover) + '" alt="">'
-      : '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-title);font-size:34px;color:var(--ink-3)">' + C.esc((a.title || '相册').slice(0,1)) + '</div>';
-    return '<article class="card album-card" data-id="' + C.esc(a.id) + '">' +
-      '<div class="album-cover">' + coverHtml + '</div>' +
-      '<div class="card-title">' + C.esc(a.title || '未命名相册') + '</div>' +
-      '<p class="card-text">' + C.esc(a.desc || '') + '</p>' +
-      '<div class="album-count">共 ' + ((a.images || []).length) + ' 张</div>' +
-      '</article>';
+      ? '<img src="' + C.esc(cover) + '" alt="" loading="lazy">'
+      : '<div class="album-cover-ph">' + C.esc((a.title || '相册').slice(0,1)) + '</div>';
+    var photos = imgs.map(function(im){
+      var cap = im.caption || '';
+      return '<figure class="album-photo" data-src="' + C.esc(im.src || '') + '" data-cap="' + C.esc(cap) + '">' +
+        '<img src="' + C.esc(im.src || '') + '" alt="" loading="lazy">' +
+        (cap ? '<figcaption>' + C.esc(cap) + '</figcaption>' : '') +
+        '</figure>';
+    }).join('');
+    var body = photos
+      ? '<div class="album-grid">' + photos + '</div>'
+      : '<p class="hint">这个相册还没有照片</p>';
+    return '<div class="list-item album-item" id="album-' + i + '">' +
+      '<div class="list-item-head" onclick="document.getElementById(\'album-' + i + '\').classList.toggle(\'open\')">' +
+      '<div class="album-head"><div class="album-cover-sm">' + coverHtml + '</div>' +
+      '<div class="album-head-info"><div class="list-item-title">' + C.esc(a.title || '未命名相册') + '</div>' +
+      '<div class="list-item-meta">' + C.esc(a.desc || '') + (a.desc ? ' · ' : '') + '共 ' + imgs.length + ' 张</div></div></div>' +
+      '<span class="list-item-arrow">▶</span></div>' +
+      '<div class="list-item-body">' + body + '</div></div>';
   }
 
   (async function(){
@@ -106,13 +99,9 @@
       var data = await C.fetchJSON('albums.json');
       albums = data.albums || [];
     }
-    LB.albums = albums;
     box.innerHTML = albums.map(albumCard).join('') || '<p class="hint">相册还在建设中，敬请期待</p>';
-    box.querySelectorAll('.album-card').forEach(function(card){
-      card.addEventListener('click', function(){
-        var a = albums.find(function(x){ return x.id === card.dataset.id; });
-        if(a && a.images && a.images.length) LB.open(a, 0);
-      });
+    box.querySelectorAll('.album-photo').forEach(function(f){
+      f.addEventListener('click', function(){ LB.open(f.dataset.src, f.dataset.cap); });
     });
   })().catch(function(e){ console.error(e); });
 })();
