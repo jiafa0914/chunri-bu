@@ -48,6 +48,7 @@
         <div class="field"><label>确认密码</label><input id="rg-pwd2" type="password" placeholder="再输一次"></div>
         <div class="field"><label>设置密码</label><input id="rg-pwd" type="password" placeholder="8~32 位，需含字母和数字"></div>
       </div>
+      <div class="field"><label>游戏昵称 / 游戏ID（选填，用于自动绑定档案）</label><input id="rg-name" placeholder="例如：川厌"></div>
       <div class="form-actions">
         <button class="btn btn-cinnabar btn-sm" id="rg-submit">注 册</button>
       </div>
@@ -128,17 +129,30 @@
         verification_code: code,
         verification_token: token
       });
-      C.toast('注册成功，已自动登录', 'ok');
-      showDone();
+      var boundName = '';
+      var rgName = $('rg-name').value.trim();
+      if(rgName){
+        try {
+          var plist = await CB.listProfiles();
+          var pk = rgName.toLowerCase();
+          var pt = (plist || []).filter(function(p){ if(p.uid || p.email) return false; var nn = String(p.name||'').toLowerCase(); var gg = String(p.gameId||'').toLowerCase(); return nn === pk || gg === pk; })[0];
+          if(pt){
+            await CB.coll('profiles').doc(pt._id || pt.id).update({ uid: CB.getUid(), email: CB.getEmail() || '', claimedAt: new Date().toISOString(), claimCode: '' });
+            boundName = pt.name || rgName;
+          }
+        } catch(e){ console.warn('注册后自动绑定失败', e); }
+      }
+      C.toast(boundName ? ('注册成功，已自动绑定「' + boundName + '」') : '注册成功，已自动登录', 'ok');
+      showDone(boundName);
     } catch(e){ C.toast('注册失败：' + (e.message || e), 'err'); }
   });
 
-  function showDone(){
+  function showDone(boundName){
     $('form-login').style.display='none';
     $('form-reg').style.display='none';
     $('auth-tabs').style.display='none';
     $('login-title').textContent='欢迎加入椿日部';
-    $('done-email').textContent = CB.getEmail() || '已登录';
+    $('done-email').textContent = (CB.getEmail() || '已登录') + (boundName ? '（已绑定档案：' + boundName + '）' : '');
     $('auth-done').style.display='';
   }
 
