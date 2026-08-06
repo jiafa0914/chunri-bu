@@ -31,8 +31,15 @@ jobs:
           TCB_SECRET_ID: ${{ secrets.TCB_SECRET_ID }}
           TCB_SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
 
-      - name: Deploy to CloudBase static hosting
+      - name: Deploy app to CloudBase (webapps)
         env:
           TCB_ENV_ID: chunri-bu-d7gvy3e6naad3ba52
         run: |
-          tcb hosting deploy dist / -e "$TCB_ENV_ID"
+          tcb app deploy chunri-bu \
+            --framework static \
+            --install-command "" \
+            --build-command "" \
+            --output-dir ./dist \
+            --deploy-path /chunri-bu \
+            --force \
+            -e "$TCB_ENV_ID"
