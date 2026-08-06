@@ -43,7 +43,7 @@
     el.textContent = msg;
     el.className = 'toast show ' + (type || '');
     clearTimeout(el._t);
-    el._t = setTimeout(function(){ el.className = 'toast ' + (type || ''); }, 2600);
+    el._t = setTimeout(function(){ el.className = 'toast ' + (type || ''); }, 3800);
   };
 
   var NAV = [
