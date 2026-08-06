@@ -1,8 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
-  <rect x="6" y="6" width="108" height="108" rx="12" fill="#b03a2e" stroke="#8f2f26" stroke-width="4"/>
-  <g fill="#f6f1e4" font-family="Kaiti SC,STKaiti,KaiTi,FangSong,serif" text-anchor="middle">
-    <text x="60" y="42" font-size="30">椿</text>
-    <text x="60" y="76" font-size="30">日</text>
-    <text x="60" y="110" font-size="30">部</text>
-  </g>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#bb4230"/>
+      <stop offset="1" stop-color="#8f2f26"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="108" height="108" rx="14" fill="url(#g)"/>
+  <rect x="9.5" y="9.5" width="101" height="101" rx="11" fill="none" stroke="#f0d48a" stroke-width="1.5" opacity="0.6"/>
+  <text x="60" y="81" text-anchor="middle" font-family="&quot;Ma Shan Zheng&quot;,&quot;STXingkai&quot;,&quot;KaiTi&quot;,&quot;Kaiti SC&quot;,serif" font-size="62" fill="#f0d48a">椿</text>
 </svg>
