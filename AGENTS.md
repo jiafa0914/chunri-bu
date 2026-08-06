@@ -4,6 +4,12 @@
 
 这是一个纯静态站点：HTML + CSS + JavaScript + JSON 数据文件。内容通过 `admin.html`（社主管理面板）和 `member-edit.html`（成员自助编辑）经由 GitHub API 写回本仓库。
 
+## 工作方式（重要）
+
+- 每次动手前先了解现状，先给出方案/选项，等社主确认后再实施。
+- 未经确认，不直接改动网站内容或推送到线上。
+- 涉及方案选择时，先提问；社主已明确指示的小改动可直接执行。
+
 ## 站点结构
 
 - `index.html` 首页 · `about.html` 关于 · `members.html` 成员 · `activities.html` 活动 · `guides.html` 攻略 · `daily.html` 江湖日报 · `recruit.html` 招新
