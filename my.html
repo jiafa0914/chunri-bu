@@ -22,6 +22,13 @@
     <h3>还没有成员档案</h3>
     <p class="hint" style="margin:10px 0" id="np-msg"></p>
     <p class="hint" style="margin:6px 0">你的登录邮箱：<b id="np-email"></b></p>
+    <div style="margin-top:14px;border-top:1px dashed var(--line);padding-top:14px">
+      <p class="hint" style="margin-bottom:8px">如果社主已经给你建了档案，输入你的【游戏昵称 / 游戏ID】即可绑定，绑定后就能自己修改照片、签名和背景音乐：</p>
+      <div style="display:flex;gap:8px">
+        <input id="bind-key" placeholder="游戏昵称 / 游戏ID" style="flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius)">
+        <button class="btn btn-cinnabar btn-sm" id="bind-btn">绑定档案</button>
+      </div>
+    </div>
     <div class="form-actions"><a class="btn btn-paper btn-sm" href="members.html">看看成员页</a></div>
   </div>
 <div id="profile-card" class="admin-card" style="display:none">
@@ -72,6 +79,41 @@
   var docId = null, newPhoto = null, newBgm = null, role = '';
 
   function ts(){ return new Date().toISOString().replace(/[-:T]/g,'').slice(0,14) + Math.random().toString(36).slice(2,6); }
+  async function bindProfile(){
+    var key = $('bind-key').value.trim();
+    if(!key){ C.toast('请输入游戏昵称或游戏ID', 'err'); return; }
+    var uid = CB.getUid();
+    var email = CB.getEmail() || '';
+    if(!uid || !email){ C.toast('请先登录', 'err'); return; }
+    var btn = $('bind-btn');
+    btn.disabled = true; btn.textContent = '绑定中…';
+    C.toast('正在查找档案…');
+    try {
+      var list = await CB.listProfiles();
+      var k = key.toLowerCase();
+      var matches = (list || []).filter(function(p){
+        if(p.uid || p.email) return false;
+        var n = String(p.name || '').toLowerCase();
+        var g = String(p.gameId || '').toLowerCase();
+        return n === k || g === k;
+      });
+      if(!matches.length){
+        C.toast('没找到这个昵称/ID的档案，请确认后重试，或联系社主', 'err');
+        return;
+      }
+      var target = matches[0];
+      await CB.coll('profiles').doc(target._id || target.id).update({
+        uid: uid, email: email, claimedAt: new Date().toISOString(), claimCode: ''
+      });
+      C.toast('绑定成功！现在可以编辑档案了', 'ok');
+      setTimeout(function(){ location.reload(); }, 1200);
+    } catch(e){
+      C.toast('绑定失败：' + (e.message || e), 'err');
+    } finally {
+      btn.disabled = false; btn.textContent = '绑定档案';
+    }
+  }
+  $('bind-btn').addEventListener('click', bindProfile);
 
   $('my-photo-file').addEventListener('change', function(){
     var f = $('my-photo-file').files[0];
