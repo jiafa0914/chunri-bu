@@ -116,9 +116,9 @@
     var ann = cfg.announcements || [];
     var annBox = document.getElementById('ann-list');
     if(ann.length){
-      annBox.innerHTML = ann.slice(0, 3).map(function(a){
-        return '<div class="list-item"><div class="list-item-head"><div><div class="list-item-title">' + C.esc(a.title) + '</div><div class="list-item-meta">' + C.esc(a.date) + '</div></div></div>' +
-          '<div class="list-item-body open"><p>' + C.esc(a.content) + '</p></div></div>';
+      annBox.innerHTML = ann.slice(0, 3).map(function(a, i){
+        return '<div class="list-item" id="ann-' + i + '"><div class="list-item-head" onclick="document.getElementById(\'ann-' + i + '\').classList.toggle(\'open\')"><div><div class="list-item-title">' + C.esc(a.title) + '</div><div class="list-item-meta">' + C.esc(a.date) + '</div></div><span class="list-item-arrow">▶</span></div>' +
+          '<div class="list-item-body"><p>' + C.esc(a.content) + '</p></div></div>';
       }).join('');
     } else annBox.innerHTML = '<p class="hint">暂无公告</p>';
 
@@ -155,9 +155,9 @@
 
     var dl = await C.fetchJSON('daily.json');
     var issues = dl.issues || [];
-    document.getElementById('daily-list').innerHTML = issues.slice(0, 1).map(function(d){
-      return '<div class="list-item"><div class="list-item-head"><div><div class="list-item-title">' + C.esc(d.issue || '') + ' · ' + C.esc(d.title) + '</div><div class="list-item-meta">' + C.esc(d.date || '') + '</div></div></div>' +
-        '<div class="list-item-body open">' + (d.content || []).map(function(p){ return '<p>' + C.esc(p) + '</p>'; }).join('') + '</div></div>';
+    document.getElementById('daily-list').innerHTML = issues.slice(0, 1).map(function(d, i){
+      return '<div class="list-item" id="daily-' + i + '"><div class="list-item-head" onclick="document.getElementById(\'daily-' + i + '\').classList.toggle(\'open\')"><div><div class="list-item-title">' + C.esc(d.issue || '') + ' · ' + C.esc(d.title) + '</div><div class="list-item-meta">' + C.esc(d.date || '') + '</div></div><span class="list-item-arrow">▶</span></div>' +
+        '<div class="list-item-body">' + (d.content || []).map(function(p){ return '<p>' + C.esc(p) + '</p>'; }).join('') + '</div></div>';
     }).join('') || '<p class="hint">暂无日报</p>';
 
     C.setupBgm();
