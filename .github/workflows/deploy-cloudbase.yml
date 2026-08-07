@@ -32,10 +32,12 @@ jobs:
           TCB_SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
 
       - name: Deploy app to CloudBase (webapps)
-        timeout-minutes: 25
+        timeout-minutes: 30
         env:
           TCB_ENV_ID: chunri-bu-d7gvy3e6naad3ba52
         run: |
+          # disable COS keep-alive so the CLI exits cleanly after upload
+          export COS_SDK_KEEPALIVE=false
           # drop unused legacy BGM files to speed up upload
           rm -f dist/assets/music/sitebgm-*.mp3 \
                 dist/assets/music/jiangshang-qingfengyou.ogg
