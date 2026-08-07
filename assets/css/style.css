@@ -209,7 +209,7 @@ input,textarea,select{font-family:inherit;font-size:14px}
 .list-item-arrow{color:var(--ink-3);transition:transform .25s;font-size:14px}
 .list-item.open .list-item-arrow{transform:rotate(90deg)}
 .list-item-body{max-height:0;overflow:hidden;padding:0 20px;border-top:1px dashed transparent;opacity:0;transition:max-height .4s ease,padding .4s ease,opacity .4s ease,border-color .4s ease}
-.list-item.open .list-item-body{max-height:1600px;padding:4px 20px 20px;border-top:1px dashed var(--line);opacity:1}
+.list-item.open .list-item-body{max-height:none;padding:4px 20px 20px;border-top:1px dashed var(--line);opacity:1}
 .list-item-body p{margin:10px 0;color:var(--ink-2);font-size:14.5px;white-space:pre-line}
 
 /* ---------- 竖排文字 ---------- */
