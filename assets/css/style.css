@@ -409,3 +409,16 @@ input,textarea,select{font-family:inherit;font-size:14px}
 .md-comments-input{display:flex;gap:8px;margin-top:12px}
 .md-comments-input input{flex:1;padding:8px 12px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(255,247,248,.8);color:var(--ink);font-size:14px}
 .md-comments-input input:focus{outline:none;border-color:var(--cinnabar)}
+
+/* ---------- 评论回复 ---------- */
+.cmt-reply{margin-left:auto;border:none;background:none;color:var(--dai);cursor:pointer;font-size:12.5px;font-family:var(--font-title);letter-spacing:1px;padding:0 2px}
+.cmt-reply:hover{color:var(--cinnabar)}
+.cmt-replies{margin-top:6px;margin-left:8px;border-left:2px solid var(--line);padding-left:10px;display:flex;flex-direction:column;gap:4px}
+.reply-item{display:flex;align-items:baseline;gap:6px;font-size:13px;background:rgba(38,35,28,.04);border-radius:4px;padding:4px 8px}
+.reply-item .cmt-del{margin-left:auto}
+.reply-name{font-family:var(--font-title);color:var(--cinnabar);letter-spacing:1px;white-space:nowrap;font-size:12.5px}
+.reply-text{color:var(--ink);word-break:break-word}
+.reply-box{display:flex;gap:6px;margin-top:6px}
+.reply-box input{flex:1;padding:6px 10px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(255,247,248,.8);color:var(--ink);font-size:13px;min-width:0}
+.reply-box input:focus{outline:none;border-color:var(--cinnabar)}
+.reply-box .btn{padding:6px 12px;font-size:12.5px;flex:none}

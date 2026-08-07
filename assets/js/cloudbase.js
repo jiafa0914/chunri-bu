@@ -132,4 +132,17 @@
     var _ = app.database().command;
     await app.database().collection('profiles').doc(docId).update({ comments: _.pull({ _id: commentId }) });
   };
+
+  // 回复评论（回复统一存到档案的 replies 数组，用 commentId 关联）
+  CB.addReply = async function(docId, reply){
+    init();
+    var _ = app.database().command;
+    await app.database().collection('profiles').doc(docId).update({ replies: _.push([reply]) });
+  };
+  // 删除回复
+  CB.removeReply = async function(docId, replyId){
+    init();
+    var _ = app.database().command;
+    await app.database().collection('profiles').doc(docId).update({ replies: _.pull({ _id: replyId }) });
+  };
 })();

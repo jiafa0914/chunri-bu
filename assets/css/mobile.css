@@ -86,3 +86,7 @@
 /* 评论输入框手机端 */
 .md-comments-input{flex-wrap:wrap}
 .md-comments-input .btn{flex:none}
+
+/* 回复输入框手机端 */
+.reply-box{flex-wrap:wrap}
+.reply-box input{width:100%}

@@ -60,15 +60,37 @@
 
   function commentsHtml(m){
     var list = m.comments || [];
+    var replies = m.replies || [];
+    var logged = realLogin;
     return list.map(function(c){
       var mine = c.uid && c.uid === uid;
+      var rs = replies.filter(function(r){ return r.commentId === c._id; });
+      var rsHtml = rs.map(function(r){
+        var rm = r.uid && r.uid === uid;
+        return '<div class="reply-item">' +
+          '<span class="reply-name">' + esc(r.name || '匿名') + '</span>' +
+          '<span class="reply-text">' + esc(r.text || '') + '</span>' +
+          (rm ? '<button class="cmt-del" data-rid="' + esc(r._id) + '" title="删除回复">×</button>' : '') +
+          '</div>';
+      }).join('');
       return '<div class="cmt-item">' +
         '<div class="cmt-top"><span class="cmt-name">' + esc(c.name || '匿名') + '</span><span class="cmt-time">' + fmtTime(c.createdAt) + '</span>' +
-        (mine ? '<button class="cmt-del" data-cid="' + esc(c._id) + '" title="删除">×</button>' : '') +
+        (logged ? '<button class="cmt-reply" data-cid="' + esc(c._id) + '" title="回复">回复</button>' : '') +
+        (mine ? '<button class="cmt-del" data-cid="' + esc(c._id) + '" title="删除评论">×</button>' : '') +
         '</div>' +
         '<div class="cmt-text">' + esc(c.text || '') + '</div>' +
+        (rsHtml ? '<div class="cmt-replies">' + rsHtml + '</div>' : '') +
+        (logged ? '<div class="reply-box" style="display:none"><input class="reply-input" maxlength="200" placeholder="回复 ' + esc(c.name || '') + '…"><button class="reply-send btn btn-cinnabar btn-sm">发送</button></div>' : '') +
         '</div>';
     }).join('') || '<p class="hint" style="padding:12px 0;text-align:center">还没有评论，来说两句吧～</p>';
+  }
+
+  function refreshComments(m){
+    var listBox = document.querySelector('.md-comments-list');
+    if(listBox) listBox.innerHTML = commentsHtml(m);
+    var cnt = document.querySelector('.cmt-count');
+    if(cnt) cnt.textContent = (m.comments || []).length;
+    bindComments(m);
   }
 
   function bindComments(m){
@@ -89,37 +111,71 @@
         };
         CB.addComment(m.id, comment).then(function(){
           (m.comments = m.comments || []).push(comment);
-          var listBox = document.querySelector('.md-comments-list');
-          if(listBox) listBox.innerHTML = commentsHtml(m);
-          var cnt = document.querySelector('.cmt-count');
-          if(cnt) cnt.textContent = m.comments.length;
+          refreshComments(m);
           input.value = '';
           C.toast('评论成功', 'ok');
-          bindComments(m);
         }).catch(function(e){ C.toast('评论失败：' + (e.message || e), 'err'); })
           .finally(function(){ send.disabled = false; });
       }
       send.addEventListener('click', post);
       input.addEventListener('keydown', function(e){ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); post(); } });
     }
-    document.querySelectorAll('.cmt-del').forEach(function(b){
+    document.querySelectorAll('.cmt-del[data-cid]').forEach(function(b){
       b.addEventListener('click', function(){
         var cid = b.dataset.cid;
         if(!confirm('删除这条评论？')) return;
         CB.removeComment(m.id, cid).then(function(){
           m.comments = (m.comments || []).filter(function(c){ return c._id !== cid; });
-          var listBox = document.querySelector('.md-comments-list');
-          if(listBox) listBox.innerHTML = commentsHtml(m);
-          var cnt = document.querySelector('.cmt-count');
-          if(cnt) cnt.textContent = m.comments.length;
+          m.replies = (m.replies || []).filter(function(r){ return r.commentId !== cid; });
+          refreshComments(m);
           C.toast('已删除', 'ok');
-          bindComments(m);
         }).catch(function(e){ C.toast('删除失败：' + (e.message || e), 'err'); });
       });
     });
+    document.querySelectorAll('.cmt-del[data-rid]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var rid = b.dataset.rid;
+        if(!confirm('删除这条回复？')) return;
+        CB.removeReply(m.id, rid).then(function(){
+          m.replies = (m.replies || []).filter(function(r){ return r._id !== rid; });
+          refreshComments(m);
+          C.toast('已删除', 'ok');
+        }).catch(function(e){ C.toast('删除失败：' + (e.message || e), 'err'); });
+      });
+    });
+    document.querySelectorAll('.cmt-reply').forEach(function(b){
+      b.addEventListener('click', function(){
+        var box = b.closest('.cmt-item').querySelector('.reply-box');
+        if(box) box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+      });
+    });
+    document.querySelectorAll('.reply-send').forEach(function(b){
+      b.addEventListener('click', function(){
+        var item = b.closest('.cmt-item');
+        var cid = item.querySelector('.cmt-reply').dataset.cid;
+        var inp = item.querySelector('.reply-input');
+        var text = inp.value.trim();
+        if(!text){ C.toast('先写点内容吧', 'err'); return; }
+        if(text.length > 200){ C.toast('回复最多 200 字', 'err'); return; }
+        b.disabled = true;
+        var reply = {
+          _id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          commentId: cid,
+          uid: uid,
+          name: currentName || '成员',
+          text: text,
+          createdAt: new Date().toISOString()
+        };
+        CB.addReply(m.id, reply).then(function(){
+          (m.replies = m.replies || []).push(reply);
+          refreshComments(m);
+          C.toast('回复成功', 'ok');
+        }).catch(function(e){ C.toast('回复失败：' + (e.message || e), 'err'); })
+          .finally(function(){ b.disabled = false; });
+      });
+    });
   }
-
-  function openMember(m){
+function openMember(m){
     C.openMember(m);
     var photo = m.photo ? '<img src="' + esc(m.photo) + '" alt="">' : '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-family:var(--font-title);font-size:44px;color:var(--ink-3)">' + esc((m.name || '?').slice(0,1)) + '</div>';
     var isLogged = realLogin;
@@ -178,6 +234,7 @@
             photo: p.photo ? (urls[p.photo] || '') : '',
             bgm: p.bgm ? (urls[p.bgm] || '') : '',
             likes: p.likes || [],
+            replies: p.replies || [],
             comments: p.comments || [],
             sort: (p.sort === undefined || p.sort === null) ? 999999 : p.sort,
             createdAt: p.createdAt || '',

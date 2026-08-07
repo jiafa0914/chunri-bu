@@ -129,7 +129,14 @@
     C.fetchJSON('config.json').then(function(cfg){
       var ft = document.getElementById('footer-text');
       if(ft && cfg && cfg.site && cfg.site.footer) ft.textContent = cfg.site.footer;
-      if(cfg && cfg.site) C.setSiteBgm(cfg.site.bgm || '');
+      if(cfg && cfg.site && cfg.site.bgm){
+      var __bgm = cfg.site.bgm;
+      if(/^cloud:\/\//i.test(__bgm)){
+        CB.fileUrl(__bgm).then(function(u){ if(u) C.setSiteBgm(u); }).catch(function(){});
+      } else {
+        C.setSiteBgm(__bgm);
+      }
+    }
     }).catch(function(){});
   };
 

@@ -763,10 +763,10 @@ function genClaimCode(){
     if(f.size > 8*1024*1024){ C.toast('音频请控制在 8MB 以内', 'err'); return; }
     C.toast('正在上传官网音乐…');
     try {
-      var p = await GH.uploadAsset(f, 'assets/music', GH.fileName('sitebgm') + '.mp3');
-      $('set-bgm').value = p;
+      var r = await CB.upload('site/bgm-' + Date.now().toString(36) + '.mp3', f);
+      $('set-bgm').value = r.id || r.path || '';
       C.toast('音乐已上传，点「保存站点设置」生效', 'ok');
-    } catch(e){ C.toast('上传失败：' + e.message, 'err'); }
+    } catch(e){ C.toast('上传失败：' + (e.message || e), 'err'); }
   }
   function renderAll(){ renderBg(); renderSettings(); renderAnn(); renderAbout(); renderAct(); renderGuides(); renderDaily(); renderAccount(); renderMembers(); renderAlbums(); }
 
