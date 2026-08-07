@@ -311,16 +311,20 @@
   function genEditKey(){ C.toast('已升级为账号机制：成员登录后自己改档案', 'ok'); }
     async function moveMember(i, dir){
     var j = i + dir;
-    if(j < 0 || j >= profiles.length) return;
+    if(j < 0 || j >= profiles.length){ C.toast(dir < 0 ? '已经是最上面了' : '已经是最下面了', 'err'); return; }
     if(!CB.isLoggedIn()){ C.toast('请先登录', 'err'); return; }
-    var a = profiles[i], b = profiles[j];
-    if(a.sort === undefined || a.sort === null) a.sort = i * 10;
-    if(b.sort === undefined || b.sort === null) b.sort = j * 10;
-    var tmp = a.sort; a.sort = b.sort; b.sort = tmp;
     C.toast('正在调整顺序…');
     try {
-      await CB.coll('profiles').doc(a._id || a.id).update({ sort: a.sort });
-      await CB.coll('profiles').doc(b._id || b.id).update({ sort: b.sort });
+      // 交换相邻两个成员的位置
+      var tmp = profiles[i]; profiles[i] = profiles[j]; profiles[j] = tmp;
+      // 把整个列表重新统一编号并写回，保证顺序稳定、不跳动
+      for(var k = 0; k < profiles.length; k++){
+        var nv = (k + 1) * 10;
+        if(profiles[k].sort !== nv){
+          await CB.coll('profiles').doc(profiles[k]._id || profiles[k].id).update({ sort: nv });
+          profiles[k].sort = nv;
+        }
+      }
       await renderMembers();
       C.toast('顺序已更新', 'ok');
     } catch(e){ C.toast('调整失败：' + (e.message || e), 'err'); }
