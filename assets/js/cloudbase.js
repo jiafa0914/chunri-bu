@@ -104,4 +104,32 @@
   CB.removeDoc = async function(name, docId){
     await CB.coll(name).doc(docId).remove();
   };
+
+  /* ---------- 点赞 / 评论（数据直接存在成员档案里） ---------- */
+  CB.command = function(){ init(); return app.database().command; };
+
+  // 点赞（每人最多一次，用 addToSet 去重）
+  CB.likeProfile = async function(docId, uid){
+    init();
+    var _ = app.database().command;
+    await app.database().collection('profiles').doc(docId).update({ likes: _.addToSet(uid) });
+  };
+  // 取消赞
+  CB.unlikeProfile = async function(docId, uid){
+    init();
+    var _ = app.database().command;
+    await app.database().collection('profiles').doc(docId).update({ likes: _.pull(uid) });
+  };
+  // 发评论
+  CB.addComment = async function(docId, comment){
+    init();
+    var _ = app.database().command;
+    await app.database().collection('profiles').doc(docId).update({ comments: _.push([comment]) });
+  };
+  // 删评论
+  CB.removeComment = async function(docId, commentId){
+    init();
+    var _ = app.database().command;
+    await app.database().collection('profiles').doc(docId).update({ comments: _.pull({ _id: commentId }) });
+  };
 })();

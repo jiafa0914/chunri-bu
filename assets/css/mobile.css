@@ -78,3 +78,11 @@
 
   .auth-chip a{font-size:12px;padding:4px 8px}
 }
+
+
+/* 点赞按钮手机端适配 */
+.member-cell .like-btn{right:4px;bottom:4px;padding:3px 7px;font-size:12px}
+.member-cell .like-btn .like-heart{font-size:13px}
+/* 评论输入框手机端 */
+.md-comments-input{flex-wrap:wrap}
+.md-comments-input .btn{flex:none}

@@ -15,10 +15,10 @@
   <div class="container">
     <div class="section-head">
       <h2 class="section-title"><span class="dot"></span>成员风采<span class="dot"></span></h2>
-      <p class="section-sub">点击成员查看详情 · 进入后会播放他/她的专属旋律</p>
+      <p class="section-sub">点击成员查看详情 · 喜欢就给 TA 点个赞、留句话吧</p>
     </div>
     <div class="grid grid-4" id="member-list"></div>
-    <p class="hint" style="text-align:center;margin-top:26px">想更新自己的照片、签名或背景音乐？<a href="login.html" style="color:var(--cinnabar)">登录</a>后进入<a href="my.html" style="color:var(--cinnabar)">我的档案</a>即可自助修改。</p>
+    <p class="hint" style="text-align:center;margin-top:26px">想更新自己的照片、签名或背景音乐？<a href="login.html" style="color:var(--cinnabar)">登录</a>后进<a href="my.html" style="color:var(--cinnabar)">我的档案</a>即可自助修改。</p>
   </div>
 </section>
 
@@ -29,38 +29,136 @@
 <script src="assets/js/common.js"></script>
 <script>
 (function(){
+  var uid = '';
+  var realLogin = false;
+  var currentName = '';
+  var memberList = [];
+
+  function esc(s){ return C.esc(s); }
+  function fmtTime(t){
+    if(!t) return '';
+    var d = new Date(t);
+    if(isNaN(d.getTime())) return '';
+    function p(n){ return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
   function memberCard(m){
-    var photo = m.photo ? '<img src="' + C.esc(m.photo) + '" alt="">' : '<div class="ph-placeholder">' + C.esc((m.name || '?').slice(0,1)) + '</div>';
-    return '<article class="member-cell" data-id="' + C.esc(m.id) + '">' +
-      '<div class="member-photo">' + photo + '</div>' +
-      '<div class="member-name">' + C.esc(m.name) + '</div>' +
+    var photo = m.photo ? '<img src="' + esc(m.photo) + '" alt="">' : '<div class="ph-placeholder">' + esc((m.name || '?').slice(0,1)) + '</div>';
+    var likes = m.likes || [];
+    var liked = likes.indexOf(uid) >= 0;
+    return '<article class="member-cell" data-id="' + esc(m.id) + '">' +
+      '<div class="member-photo">' + photo +
+        '<button class="like-btn' + (liked ? ' liked' : '') + '" data-like="1" title="点赞">' +
+          '<span class="like-heart">' + (liked ? '♥' : '♡') + '</span>' +
+          '<span class="like-num">' + likes.length + '</span>' +
+        '</button>' +
+      '</div>' +
+      '<div class="member-name">' + esc(m.name) + '</div>' +
       '</article>';
   }
+
+  function commentsHtml(m){
+    var list = m.comments || [];
+    return list.map(function(c){
+      var mine = c.uid && c.uid === uid;
+      return '<div class="cmt-item">' +
+        '<div class="cmt-top"><span class="cmt-name">' + esc(c.name || '匿名') + '</span><span class="cmt-time">' + fmtTime(c.createdAt) + '</span>' +
+        (mine ? '<button class="cmt-del" data-cid="' + esc(c._id) + '" title="删除">×</button>' : '') +
+        '</div>' +
+        '<div class="cmt-text">' + esc(c.text || '') + '</div>' +
+        '</div>';
+    }).join('') || '<p class="hint" style="padding:12px 0;text-align:center">还没有评论，来说两句吧～</p>';
+  }
+
+  function bindComments(m){
+    var input = document.getElementById('cmt-input');
+    var send = document.getElementById('cmt-send');
+    if(input && send){
+      function post(){
+        var text = input.value.trim();
+        if(!text){ C.toast('先写点内容吧', 'err'); return; }
+        if(text.length > 200){ C.toast('评论最多 200 字', 'err'); return; }
+        send.disabled = true;
+        var comment = {
+          _id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          uid: uid,
+          name: currentName || '成员',
+          text: text,
+          createdAt: new Date().toISOString()
+        };
+        CB.addComment(m.id, comment).then(function(){
+          (m.comments = m.comments || []).push(comment);
+          var listBox = document.querySelector('.md-comments-list');
+          if(listBox) listBox.innerHTML = commentsHtml(m);
+          var cnt = document.querySelector('.cmt-count');
+          if(cnt) cnt.textContent = m.comments.length;
+          input.value = '';
+          C.toast('评论成功', 'ok');
+          bindComments(m);
+        }).catch(function(e){ C.toast('评论失败：' + (e.message || e), 'err'); })
+          .finally(function(){ send.disabled = false; });
+      }
+      send.addEventListener('click', post);
+      input.addEventListener('keydown', function(e){ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); post(); } });
+    }
+    document.querySelectorAll('.cmt-del').forEach(function(b){
+      b.addEventListener('click', function(){
+        var cid = b.dataset.cid;
+        if(!confirm('删除这条评论？')) return;
+        CB.removeComment(m.id, cid).then(function(){
+          m.comments = (m.comments || []).filter(function(c){ return c._id !== cid; });
+          var listBox = document.querySelector('.md-comments-list');
+          if(listBox) listBox.innerHTML = commentsHtml(m);
+          var cnt = document.querySelector('.cmt-count');
+          if(cnt) cnt.textContent = m.comments.length;
+          C.toast('已删除', 'ok');
+          bindComments(m);
+        }).catch(function(e){ C.toast('删除失败：' + (e.message || e), 'err'); });
+      });
+    });
+  }
+
   function openMember(m){
     C.openMember(m);
-    var photo = m.photo ? '<img src="' + C.esc(m.photo) + '" alt="">' : '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-family:var(--font-title);font-size:44px;color:var(--ink-3)">' + C.esc((m.name || '?').slice(0,1)) + '</div>';
+    var photo = m.photo ? '<img src="' + esc(m.photo) + '" alt="">' : '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-family:var(--font-title);font-size:44px;color:var(--ink-3)">' + esc((m.name || '?').slice(0,1)) + '</div>';
+    var isLogged = realLogin;
+    var commentsBox =
+      '<div class="md-comments">' +
+        '<div class="md-comments-head">评论 <span class="cmt-count">' + (m.comments || []).length + '</span></div>' +
+        '<div class="md-comments-list">' + commentsHtml(m) + '</div>' +
+        (isLogged
+          ? '<div class="md-comments-input"><input id="cmt-input" maxlength="200" placeholder="写一句评论…"><button class="btn btn-cinnabar btn-sm" id="cmt-send">发送</button></div>'
+          : '<div class="md-comments-input"><span class="hint">登录后可评论 <a href="login.html" style="color:var(--cinnabar)">去登录</a></span></div>') +
+      '</div>';
     C.modal.onClose = function(){ C.closeMember(); };
     C.modal.open(
       '<div class="modal-title">成员资料</div>' +
       '<div class="member-detail">' +
         '<div class="md-photo">' + photo + '</div>' +
         '<div>' +
-          '<div class="md-name">' + C.esc(m.name) + '</div>' +
-          '<div style="margin-top:8px"><span class="badge">' + C.esc(m.role || '') + '</span>' + (m.title ? ' <span class="badge badge-gold">' + C.esc(m.title) + '</span>' : '') + '</div>' +
-          '<div class="md-sign">「' + C.esc(m.signature || '') + '」</div>' +
-          '<div class="md-bio">' + C.esc(m.bio || '') + '</div>' +
-          '<div style="margin-top:16px">' + (m.bgm ? '<button class="bgm-btn" data-bgm="' + C.esc(m.bgm) + '">♪ 播放</button>' : '<span class="hint">这位游侠还没设置背景音乐</span>') + '</div>' +
+          '<div class="md-name">' + esc(m.name) + '</div>' +
+          '<div style="margin-top:8px"><span class="badge">' + esc(m.role || '') + '</span>' + (m.title ? ' <span class="badge badge-gold">' + esc(m.title) + '</span>' : '') + '</div>' +
+          '<div class="md-sign">「' + esc(m.signature || '') + '」</div>' +
+          '<div class="md-bio">' + esc(m.bio || '') + '</div>' +
+          '<div style="margin-top:16px">' + (m.bgm ? '<button class="bgm-btn" data-bgm="' + esc(m.bgm) + '">♪ 播放</button>' : '<span class="hint">这位游侠还没设置背景音乐</span>') + '</div>' +
         '</div>' +
-      '</div>'
+      '</div>' +
+      commentsBox
     );
     C.setupBgm();
+    bindComments(m);
   }
+
   (async function(){
     var box = document.getElementById('member-list');
-    var isMobile = window.matchMedia('(max-width:768px)').matches;
     var list = [], usedCloud = false;
     try {
       await CB.ensureAnon();
+      var ls = await CB.getLoginState();
+      var user = ls && ls.user ? ls.user : null;
+      uid = CB.getUid() || '';
+      realLogin = !!(user && !user.isAnonymous);
       var docs = await CB.listProfiles();
       var actives = (docs || []).filter(function(p){ return p.active !== false; });
       if(actives.length){
@@ -78,21 +176,54 @@
             signature: p.signature || '',
             bio: p.bio || '',
             photo: p.photo ? (urls[p.photo] || '') : '',
-            bgm: p.bgm ? (urls[p.bgm] || '') : ''
+            bgm: p.bgm ? (urls[p.bgm] || '') : '',
+            likes: p.likes || [],
+            comments: p.comments || [],
+            sort: (p.sort === undefined || p.sort === null) ? 999999 : p.sort,
+            createdAt: p.createdAt || '',
+            uid: p.uid || ''
           };
         });
+        var me = list.find(function(x){ return x.uid === uid; });
+        currentName = me ? me.name : '';
       }
     } catch(e){ console.warn('云成员读取失败，使用旧数据：', e); }
     if(!usedCloud){
       var data = await C.fetchJSON('members.json');
-      list = (data.members || []).filter(function(m){ return m.active !== false; });
+      list = (data.members || []).filter(function(m){ return m.active !== false; }).map(function(m){
+        return { id: m.id || m.name, name: m.name || '未命名', role: m.role || '', title: m.title || '', signature: m.signature || '', bio: m.bio || '', photo: m.photo || '', bgm: m.bgm || '', likes: [], comments: [], sort: 999999, createdAt: '', uid: '' };
+      });
     }
+    list.sort(function(a, b){
+      if(a.sort !== b.sort) return a.sort - b.sort;
+      return String(a.createdAt).localeCompare(String(b.createdAt));
+    });
+    memberList = list;
     box.className = 'member-wall';
     box.innerHTML = list.map(memberCard).join('') || '<p class="hint">暂无成员</p>';
     box.querySelectorAll('.member-cell').forEach(function(card){
       card.addEventListener('click', function(){
         var m = list.find(function(x){ return x.id === card.dataset.id; });
         if(m) openMember(m);
+      });
+    });
+    box.querySelectorAll('.like-btn').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var card = btn.closest('.member-cell');
+        var m = list.find(function(x){ return x.id === card.dataset.id; });
+        if(!m) return;
+        if(!realLogin){ C.toast('登录后才能点赞', 'err'); return; }
+        var liked = (m.likes || []).indexOf(uid) >= 0;
+        var op = liked ? CB.unlikeProfile(m.id, uid) : CB.likeProfile(m.id, uid);
+        op.then(function(){
+          if(liked){ m.likes = (m.likes || []).filter(function(u){ return u !== uid; }); }
+          else { (m.likes = m.likes || []).push(uid); }
+          btn.classList.toggle('liked', !liked);
+          btn.querySelector('.like-heart').textContent = liked ? '♡' : '♥';
+          btn.querySelector('.like-num').textContent = m.likes.length;
+          C.toast(liked ? '已取消点赞' : '点赞成功', 'ok');
+        }).catch(function(err){ C.toast('操作失败：' + (err.message || err), 'err'); });
       });
     });
     C.setupBgm();

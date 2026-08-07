@@ -99,6 +99,22 @@
 
   function $(id){ return document.getElementById(id); }
 
+  function errText(e){
+    if(!e) return '未知错误';
+    if(typeof e === 'string') return e;
+    var keys = ['message','errMsg','msg','error_description','errorMessage','reason','detail','error','err_msg'];
+    for(var i = 0; i < keys.length; i++){
+      var v = e[keys[i]];
+      if(v && typeof v === 'string' && v !== '[object Object]') return v;
+    }
+    if(e.code && e.message) return e.code + ': ' + e.message;
+    try {
+      var s = JSON.stringify(e);
+      if(s && s !== '{}' && s.length < 160) return s;
+    } catch(_){}
+    return '未知错误（请重试）';
+  }
+
   function showLogin(){ $('form-login').style.display=''; $('form-reg').style.display='none'; $('login-title').textContent='登录椿日部'; }
   function showReg(){ $('form-login').style.display='none'; $('form-reg').style.display=''; $('login-title').textContent='注册椿日部'; }
 
@@ -119,7 +135,7 @@
       await CB.signIn(email, pwd);
       C.toast('登录成功', 'ok');
       showDone();
-    } catch(e){ C.toast('登录失败：' + (e.message || e), 'err'); }
+    } catch(e){ C.toast('登录失败：' + errText(e), 'err'); }
   });
 
   $('rg-send').addEventListener('click', async function(){
@@ -130,7 +146,7 @@
       var v = await CB.sendEmailCode(email);
       verificationId = v && v.verification_id;
       C.toast('验证码已发送，请查收邮箱（含垃圾箱）', 'ok');
-    } catch(e){ C.toast('发送失败：' + (e.message || e), 'err'); }
+    } catch(e){ C.toast('发送失败：' + errText(e), 'err'); }
   });
 
   $('rg-submit').addEventListener('click', async function(){
@@ -166,7 +182,7 @@
       }
       C.toast(boundName ? ('注册成功，已自动绑定「' + boundName + '」') : '注册成功，已自动登录', 'ok');
       showDone(boundName);
-    } catch(e){ C.toast('注册失败：' + (e.message || e), 'err'); }
+    } catch(e){ C.toast('注册失败：' + errText(e), 'err'); }
   });
 
   function showDone(boundName){
