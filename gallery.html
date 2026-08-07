@@ -62,7 +62,7 @@
       '<div class="list-item-body"><div class="album-grid" id="album-grid-' + i + '"></div></div></div>';
   }
 
-    // 展开后才渲染照片，且分批加载（每批 20 张），避免照片太多导致卡顿
+  // 展开后才渲染照片，且分批加载（每批 20 张），避免照片太多导致卡顿
   function renderPhotos(i){
     var a = albums[i];
     if(!a) return;
@@ -112,32 +112,6 @@
     }, { rootMargin: '400px' });
     io.observe(sentinel);
     addBatch();
-  }
-window.__toggleAlbum(' + i + ')">' +
-      '<div class="album-head"><div class="album-cover-sm">' + coverHtml + '</div>' +
-      '<div class="album-head-info"><div class="list-item-title">' + C.esc(a.title || '未命名相册') + '</div>' +
-      '<div class="list-item-meta">' + C.esc(a.desc || '') + (a.desc ? ' · ' : '') + '共 ' + imgs.length + ' 张</div></div></div>' +
-      '<span class="list-item-arrow">▾</span></div>' +
-      '<div class="list-item-body"><div class="album-grid" id="album-grid-' + i + '"></div></div></div>';
-  }
-
-  // 展开时才渲染照片，避免一开始加载几十上百张图导致卡顿
-  function renderPhotos(i){
-    var a = albums[i];
-    if(!a) return;
-    var grid = document.getElementById('album-grid-' + i);
-    if(!grid || grid.dataset.loaded) return;
-    grid.dataset.loaded = '1';
-    grid.innerHTML = (a.images || []).map(function(im){
-      var cap = im.caption || '';
-      return '<figure class="album-photo" data-src="' + C.esc(im.src || '') + '" data-cap="' + C.esc(cap) + '">' +
-        '<img src="' + C.esc(im.src || '') + '" alt="" loading="lazy">' +
-        (cap ? '<figcaption>' + C.esc(cap) + '</figcaption>' : '') +
-        '</figure>';
-    }).join('') || '<p class="hint">这个相册还没有照片</p>';
-    grid.querySelectorAll('.album-photo').forEach(function(f){
-      f.addEventListener('click', function(){ LB.open(f.dataset.src, f.dataset.cap); });
-    });
   }
 
   window.__toggleAlbum = function(i){
